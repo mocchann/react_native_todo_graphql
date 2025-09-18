@@ -21,7 +21,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { Provider, useQuery } from 'urql';
+import { Provider, useMutation, useQuery } from 'urql';
 import { urqlClient } from './urqlClient';
 import { graphql } from './generated';
 
@@ -36,11 +36,15 @@ const TodoDocument = graphql(`
   }
 `);
 
-const createTodoDocument = graphql(`
-  query CreateTodo {
-    createTodo(input: {
-      title: "test title"
-      content: "test content"
+const CreateTodoDocument = graphql(`
+  mutation CreateTodo($input: CreateTodoInput!) {
+    createTodo(input: $input) {
+      errors
+      todo {
+        id
+        title
+        content
+      }
     }
   }
 `);
@@ -60,21 +64,26 @@ function App() {
 
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
-  const [{ data, fetching, error }] = useQuery({ query: TodoDocument });
   const styles = createStyles(safeAreaInsets);
-
+  const [{ data, fetching, error }] = useQuery({ query: TodoDocument });
+  const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const [newTodoContent, setNewTodoContent] = useState('');
 
-  const handleCreateTodo = () => {
-    if (!newTodoTitle.trim()) {
+  const handleCreateTodo = (title: string, content: string) => {
+    if (!title.trim() || !content.trim()) {
       Alert.alert('Failed!', 'Please input form');
       return;
     }
-
-    // TODO: 実際の作成処理を実装
-    Alert.alert('Success', 'Created new todo!');
+    createTodo({
+      input: { title, content, clientMutationId: String(Date.now()) },
+    }).then(result => {
+      if (result.error) {
+        console.error('Oh, no!', result.error);
+        return;
+      }
+    });
     setNewTodoTitle('');
     setNewTodoContent('');
     setShowCreateForm(false);
@@ -114,41 +123,17 @@ function AppContent() {
             <FlatList
               data={data.todos || []}
               keyExtractor={item => item.id}
-              ListHeaderComponent={() =>
+              ListHeaderComponent={
                 showCreateForm ? (
-                  <View style={styles.createForm}>
-                    <Text style={styles.formTitle}>New todo</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Input title"
-                      value={newTodoTitle}
-                      onChangeText={setNewTodoTitle}
-                      placeholderTextColor="#9ca3af"
-                    />
-                    <TextInput
-                      style={[styles.input, styles.textArea]}
-                      placeholder="Input content"
-                      value={newTodoContent}
-                      onChangeText={setNewTodoContent}
-                      multiline
-                      numberOfLines={3}
-                      placeholderTextColor="#9ca3af"
-                    />
-                    <View style={styles.formButtons}>
-                      <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={handleCancelCreate}
-                      >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.submitButton}
-                        onPress={handleCreateTodo}
-                      >
-                        <Text style={styles.submitButtonText}>Create</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                  <CreateForm
+                    styles={styles}
+                    newTodoTitle={newTodoTitle}
+                    setNewTodoTitle={setNewTodoTitle}
+                    newTodoContent={newTodoContent}
+                    setNewTodoContent={setNewTodoContent}
+                    handleCancelCreate={handleCancelCreate}
+                    handleCreateTodo={handleCreateTodo}
+                  />
                 ) : null
               }
               renderItem={({ item }) => (
@@ -324,3 +309,63 @@ const createStyles = (safeAreaInsets: {
   });
 
 export default App;
+
+type CreateFormProps = {
+  styles: ReturnType<typeof createStyles>;
+  newTodoTitle: string;
+  setNewTodoTitle: (t: string) => void;
+  newTodoContent: string;
+  setNewTodoContent: (t: string) => void;
+  handleCancelCreate: () => void;
+  handleCreateTodo: (title: string, content: string) => void;
+};
+
+const CreateForm = ({
+  styles,
+  newTodoTitle,
+  setNewTodoTitle,
+  newTodoContent,
+  setNewTodoContent,
+  handleCancelCreate,
+  handleCreateTodo,
+}: CreateFormProps) => {
+  return (
+    <View style={styles.createForm}>
+      <Text style={styles.formTitle}>New todo</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Input title"
+        value={newTodoTitle}
+        onChangeText={setNewTodoTitle}
+        placeholderTextColor="#9ca3af"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      <TextInput
+        style={[styles.input, styles.textArea]}
+        placeholder="Input content"
+        value={newTodoContent}
+        onChangeText={setNewTodoContent}
+        multiline
+        numberOfLines={3}
+        placeholderTextColor="#9ca3af"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      <View style={styles.formButtons}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={handleCancelCreate}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={() => handleCreateTodo(newTodoTitle, newTodoContent)}
+        >
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
