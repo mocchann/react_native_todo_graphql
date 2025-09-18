@@ -49,6 +49,19 @@ const CreateTodoDocument = graphql(`
   }
 `);
 
+const UpdateTodoDocument = graphql(`
+  mutation UpdateTodo($input: UpdateTodoInput!) {
+    updateTodo(input: $input) {
+      errors
+      todo {
+        id
+        title
+        content
+      }
+    }
+  }
+`);
+
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -67,9 +80,16 @@ function AppContent() {
   const styles = createStyles(safeAreaInsets);
   const [{ data, fetching, error }] = useQuery({ query: TodoDocument });
   const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
+  const [updatetodoResult, updateTodo] = useMutation(UpdateTodoDocument);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const [newTodoContent, setNewTodoContent] = useState('');
+  const [selectedTodo, setSelectedTodo] = useState<{
+    id: string;
+    title: string | null;
+    content: string | null;
+  } | null>(null);
 
   const handleCreateTodo = (title: string, content: string) => {
     if (!title.trim() || !content.trim()) {
@@ -84,15 +104,36 @@ function AppContent() {
         return;
       }
     });
-    setNewTodoTitle('');
-    setNewTodoContent('');
-    setShowCreateForm(false);
+    handleCancelCreate();
+  };
+
+  const handleUpdateTodo = (todoId: number, title: string, content: string) => {
+    if (!todoId || !title.trim() || !content.trim()) {
+      Alert.alert('Failed!', 'Please input form');
+      return;
+    }
+    updateTodo({
+      input: {
+        id: todoId,
+        title,
+        content,
+        clientMutationId: String(Date.now()),
+      },
+    }).then(result => {
+      if (result.error) {
+        console.error('Oh no!', result.error);
+        return;
+      }
+    });
+    handleCancelCreate();
   };
 
   const handleCancelCreate = () => {
     setNewTodoTitle('');
     setNewTodoContent('');
     setShowCreateForm(false);
+    setShowUpdateForm(false);
+    setSelectedTodo(null);
   };
 
   if (!data) {
@@ -134,10 +175,29 @@ function AppContent() {
                     handleCancelCreate={handleCancelCreate}
                     handleCreateTodo={handleCreateTodo}
                   />
+                ) : showUpdateForm && selectedTodo ? (
+                  <UpdateForm
+                    styles={styles}
+                    newTodoTitle={newTodoTitle}
+                    setNewTodoTitle={setNewTodoTitle}
+                    newTodoContent={newTodoContent}
+                    setNewTodoContent={setNewTodoContent}
+                    handleCancelCreate={handleCancelCreate}
+                    todoId={Number(selectedTodo.id)}
+                    handleUpdateTodo={handleUpdateTodo}
+                  />
                 ) : null
               }
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.todoCard}>
+                <TouchableOpacity
+                  style={styles.todoCard}
+                  onPress={() => {
+                    setSelectedTodo(item);
+                    setNewTodoTitle(item.title || '');
+                    setNewTodoContent(item.content || '');
+                    setShowUpdateForm(true);
+                  }}
+                >
                   <View style={styles.todoContent}>
                     <Text style={styles.todoTitle}>{item.title}</Text>
                     {item.content && (
@@ -362,6 +422,68 @@ const CreateForm = ({
         <TouchableOpacity
           style={styles.submitButton}
           onPress={() => handleCreateTodo(newTodoTitle, newTodoContent)}
+        >
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+type UpdateFormProps = {
+  styles: ReturnType<typeof createStyles>;
+  newTodoTitle: string;
+  setNewTodoTitle: (t: string) => void;
+  newTodoContent: string;
+  setNewTodoContent: (t: string) => void;
+  handleCancelCreate: () => void;
+  todoId: number;
+  handleUpdateTodo: (todoId: number, title: string, content: string) => void;
+};
+
+const UpdateForm = ({
+  styles,
+  newTodoTitle,
+  setNewTodoTitle,
+  newTodoContent,
+  setNewTodoContent,
+  handleCancelCreate,
+  todoId,
+  handleUpdateTodo,
+}: UpdateFormProps) => {
+  return (
+    <View style={styles.createForm}>
+      <Text style={styles.formTitle}>Update todo</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Input title"
+        value={newTodoTitle}
+        onChangeText={setNewTodoTitle}
+        placeholderTextColor="#9ca3af"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      <TextInput
+        style={[styles.input, styles.textArea]}
+        placeholder="Input content"
+        value={newTodoContent}
+        onChangeText={setNewTodoContent}
+        multiline
+        numberOfLines={3}
+        placeholderTextColor="#9ca3af"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      <View style={styles.formButtons}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={handleCancelCreate}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={() => handleUpdateTodo(todoId, newTodoTitle, newTodoContent)}
         >
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>

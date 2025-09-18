@@ -16,10 +16,12 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 type Documents = {
     "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    todoCount\n  }\n": typeof types.TodosDocument,
     "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": typeof types.CreateTodoDocument,
+    "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": typeof types.UpdateTodoDocument,
 };
 const documents: Documents = {
     "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    todoCount\n  }\n": types.TodosDocument,
     "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": types.CreateTodoDocument,
+    "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": types.UpdateTodoDocument,
 };
 
 /**
@@ -44,6 +46,10 @@ export function graphql(source: "\n  query Todos {\n    todos {\n      id\n     
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
