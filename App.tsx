@@ -22,7 +22,6 @@ import {
 import { Provider, useQuery } from 'urql';
 import { urqlClient } from './urqlClient';
 import { graphql } from './generated';
-import { Todo } from './generated/graphql';
 
 const TodoDocument = graphql(`
   query Todos {
