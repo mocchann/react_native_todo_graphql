@@ -21,6 +21,12 @@ import {
 import { Provider, useQuery } from 'urql';
 import { urqlClient } from './urqlClient';
 import { graphql } from './generated';
+import {
+  QueryTodosArgs,
+  Todo,
+  TodosQuery,
+  TodosQueryVariables,
+} from './generated/graphql';
 
 const TodoDocument = graphql(`
   query Todos {
@@ -63,11 +69,13 @@ function AppContent() {
         {!fetching && !error ? (
           <>
             <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Todos</Text>
-            {data?.todos?.map((t: any) => (
-              <Text key={t.id} style={{ marginBottom: 4 }}>
-                • {t.title}
-              </Text>
-            ))}
+            {data?.todos?.map(
+              (todo: Pick<Todo, 'id' | 'title' | 'content'>) => (
+                <Text key={todo.id} style={{ marginBottom: 4 }}>
+                  • {todo.title}
+                </Text>
+              ),
+            )}
           </>
         ) : null}
       </View>
