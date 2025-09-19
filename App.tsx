@@ -22,7 +22,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { Provider, useMutation, useQuery } from 'urql';
-import { urqlClient } from './urqlClient';
+import { urqlClient } from './graphql/urqlClient';
 import { graphql } from './generated';
 
 const TodoDocument = graphql(`
