@@ -62,6 +62,17 @@ const UpdateTodoDocument = graphql(`
   }
 `);
 
+const DeleteTodoDocument = graphql(`
+  mutation DeleteTodo($input: DeleteTodoInput!) {
+    deleteTodo(input: $input) {
+      errors
+      todo {
+        id
+      }
+    }
+  }
+`);
+
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -81,6 +92,7 @@ function AppContent() {
   const [{ data, fetching, error }] = useQuery({ query: TodoDocument });
   const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
   const [updatetodoResult, updateTodo] = useMutation(UpdateTodoDocument);
+  const [deleteTodoResult, deleteTodo] = useMutation(DeleteTodoDocument);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -125,6 +137,32 @@ function AppContent() {
         return;
       }
     });
+    handleCancelCreate();
+  };
+
+  const handleDeleteTodo = (todoId: number) => {
+    if (!todoId) {
+      Alert.alert('Failed!', 'Invalid todo id');
+      return;
+    }
+    Alert.alert('Are you Sure?', 'Delete the Todo', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('cancel'),
+      },
+      {
+        text: 'OK',
+        onPress: () =>
+          deleteTodo({
+            input: { id: todoId, clientMutationId: String(Date.now()) },
+          }).then(result => {
+            if (result.error) {
+              console.error('Delete failed!', result.error);
+              return;
+            }
+          }),
+      },
+    ]);
     handleCancelCreate();
   };
 
@@ -185,6 +223,7 @@ function AppContent() {
                     handleCancelCreate={handleCancelCreate}
                     todoId={Number(selectedTodo.id)}
                     handleUpdateTodo={handleUpdateTodo}
+                    handleDeleteTodo={handleDeleteTodo}
                   />
                 ) : null
               }
@@ -317,11 +356,27 @@ const createStyles = (safeAreaInsets: {
       shadowRadius: 8,
       elevation: 3,
     },
+    formTitleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
     formTitle: {
       fontSize: 18,
       fontWeight: '600',
       color: '#1a1a1a',
-      marginBottom: 16,
+    },
+    deleteButton: {
+      backgroundColor: '#ef4444',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 6,
+    },
+    deleteButtonText: {
+      color: '#ffffff',
+      fontSize: 12,
+      fontWeight: '600',
     },
     input: {
       borderWidth: 1,
@@ -439,6 +494,7 @@ type UpdateFormProps = {
   handleCancelCreate: () => void;
   todoId: number;
   handleUpdateTodo: (todoId: number, title: string, content: string) => void;
+  handleDeleteTodo: (todoId: number) => void;
 };
 
 const UpdateForm = ({
@@ -450,10 +506,19 @@ const UpdateForm = ({
   handleCancelCreate,
   todoId,
   handleUpdateTodo,
+  handleDeleteTodo,
 }: UpdateFormProps) => {
   return (
     <View style={styles.createForm}>
-      <Text style={styles.formTitle}>Update todo</Text>
+      <View style={styles.formTitleRow}>
+        <Text style={styles.formTitle}>Update todo</Text>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteTodo(todoId)}
+        >
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
       <TextInput
         style={styles.input}
         placeholder="Input title"
