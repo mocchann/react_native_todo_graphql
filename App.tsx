@@ -26,6 +26,7 @@ import { urqlClient } from './graphql/urqlClient';
 import { graphql } from './generated';
 import { useFragment } from './generated/fragment-masking';
 import { Header, HeaderFragment } from './components/Header';
+import { CreateForm, CreateTodoFragment } from './components/CreateForm';
 
 const TodosDocument = graphql(`
   query Todos {
@@ -41,12 +42,7 @@ const TodosDocument = graphql(`
 const CreateTodoDocument = graphql(`
   mutation CreateTodo($input: CreateTodoInput!) {
     createTodo(input: $input) {
-      errors
-      todo {
-        id
-        title
-        content
-      }
+      ...CreateTodoFragment
     }
   }
 `);
@@ -121,6 +117,16 @@ function AppContent() {
       if (result.error) {
         console.error('Oh, no!', result.error);
         return;
+      }
+      if (result.data?.createTodo) {
+        const createData = useFragment(
+          CreateTodoFragment,
+          result.data.createTodo,
+        );
+        if (createData?.errors && createData.errors.length > 0) {
+          Alert.alert('Error', createData.errors.join(', '));
+          return;
+        }
       }
     });
     handleCancelCreate();
@@ -202,7 +208,6 @@ function AppContent() {
               ListHeaderComponent={
                 showCreateForm ? (
                   <CreateForm
-                    styles={styles}
                     newTodoTitle={newTodoTitle}
                     setNewTodoTitle={setNewTodoTitle}
                     newTodoContent={newTodoContent}
@@ -421,66 +426,6 @@ const createStyles = (safeAreaInsets: {
   });
 
 export default App;
-
-type CreateFormProps = {
-  styles: ReturnType<typeof createStyles>;
-  newTodoTitle: string;
-  setNewTodoTitle: (t: string) => void;
-  newTodoContent: string;
-  setNewTodoContent: (t: string) => void;
-  handleCancelCreate: () => void;
-  handleCreateTodo: (title: string, content: string) => void;
-};
-
-const CreateForm = ({
-  styles,
-  newTodoTitle,
-  setNewTodoTitle,
-  newTodoContent,
-  setNewTodoContent,
-  handleCancelCreate,
-  handleCreateTodo,
-}: CreateFormProps) => {
-  return (
-    <View style={styles.createForm}>
-      <Text style={styles.formTitle}>New todo</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Input title"
-        value={newTodoTitle}
-        onChangeText={setNewTodoTitle}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Input content"
-        value={newTodoContent}
-        onChangeText={setNewTodoContent}
-        multiline
-        numberOfLines={3}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <View style={styles.formButtons}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancelCreate}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={() => handleCreateTodo(newTodoTitle, newTodoContent)}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
 
 type UpdateFormProps = {
   styles: ReturnType<typeof createStyles>;
