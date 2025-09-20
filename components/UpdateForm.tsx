@@ -100,6 +100,15 @@ export const UpdateTodoFragment = graphql(`
   }
 `);
 
+export const DeleteTodoDocument = graphql(`
+  fragment DeleteTodoFragment on DeleteTodoPayload {
+    errors
+    todo {
+      id
+    }
+  }
+`);
+
 type UpdateFormProps = {
   newTodoTitle: string;
   setNewTodoTitle: (t: string) => void;

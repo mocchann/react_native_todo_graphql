@@ -58,10 +58,7 @@ const UpdateTodoDocument = graphql(`
 const DeleteTodoDocument = graphql(`
   mutation DeleteTodo($input: DeleteTodoInput!) {
     deleteTodo(input: $input) {
-      errors
-      todo {
-        id
-      }
+      ...DeleteTodoFragment
     }
   }
 `);
