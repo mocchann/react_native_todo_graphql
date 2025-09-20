@@ -14,7 +14,6 @@ import {
   useColorScheme,
   View,
   TouchableOpacity,
-  TextInput,
   Alert,
 } from 'react-native';
 import {
@@ -27,6 +26,7 @@ import { graphql } from './generated';
 import { useFragment } from './generated/fragment-masking';
 import { Header, HeaderFragment } from './components/Header';
 import { CreateForm, CreateTodoFragment } from './components/CreateForm';
+import { UpdateForm } from './components/UpdateForm';
 
 const TodosDocument = graphql(`
   query Todos {
@@ -50,12 +50,7 @@ const CreateTodoDocument = graphql(`
 const UpdateTodoDocument = graphql(`
   mutation UpdateTodo($input: UpdateTodoInput!) {
     updateTodo(input: $input) {
-      errors
-      todo {
-        id
-        title
-        content
-      }
+      ...UpdateTodoFragment
     }
   }
 `);
@@ -217,7 +212,6 @@ function AppContent() {
                   />
                 ) : showUpdateForm && selectedTodo ? (
                   <UpdateForm
-                    styles={styles}
                     newTodoTitle={newTodoTitle}
                     setNewTodoTitle={setNewTodoTitle}
                     newTodoContent={newTodoContent}
@@ -426,75 +420,3 @@ const createStyles = (safeAreaInsets: {
   });
 
 export default App;
-
-type UpdateFormProps = {
-  styles: ReturnType<typeof createStyles>;
-  newTodoTitle: string;
-  setNewTodoTitle: (t: string) => void;
-  newTodoContent: string;
-  setNewTodoContent: (t: string) => void;
-  handleCancelCreate: () => void;
-  todoId: number;
-  handleUpdateTodo: (todoId: number, title: string, content: string) => void;
-  handleDeleteTodo: (todoId: number) => void;
-};
-
-const UpdateForm = ({
-  styles,
-  newTodoTitle,
-  setNewTodoTitle,
-  newTodoContent,
-  setNewTodoContent,
-  handleCancelCreate,
-  todoId,
-  handleUpdateTodo,
-  handleDeleteTodo,
-}: UpdateFormProps) => {
-  return (
-    <View style={styles.createForm}>
-      <View style={styles.formTitleRow}>
-        <Text style={styles.formTitle}>Update todo</Text>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeleteTodo(todoId)}
-        >
-          <Text style={styles.deleteButtonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Input title"
-        value={newTodoTitle}
-        onChangeText={setNewTodoTitle}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Input content"
-        value={newTodoContent}
-        onChangeText={setNewTodoContent}
-        multiline
-        numberOfLines={3}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <View style={styles.formButtons}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancelCreate}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={() => handleUpdateTodo(todoId, newTodoTitle, newTodoContent)}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
