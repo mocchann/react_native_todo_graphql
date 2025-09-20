@@ -24,15 +24,17 @@ import {
 import { Provider, useMutation, useQuery } from 'urql';
 import { urqlClient } from './graphql/urqlClient';
 import { graphql } from './generated';
+import { useFragment } from './generated/fragment-masking';
+import { Header, HeaderFragment } from './components/Header';
 
-const TodoDocument = graphql(`
+const TodosDocument = graphql(`
   query Todos {
     todos {
       id
       title
       content
     }
-    todoCount
+    ...HeaderFragment
   }
 `);
 
@@ -89,10 +91,15 @@ function App() {
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
-  const [{ data, fetching, error }] = useQuery({ query: TodoDocument });
+
+  const [{ data, fetching, error }] = useQuery({ query: TodosDocument });
+  const headerData = useFragment(HeaderFragment, data);
+  const todoCount = headerData?.todoCount ?? 0;
+
   const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
   const [updatetodoResult, updateTodo] = useMutation(UpdateTodoDocument);
   const [deleteTodoResult, deleteTodo] = useMutation(DeleteTodoDocument);
+
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -185,20 +192,10 @@ function AppContent() {
         {error ? <Text>{String(error)}</Text> : null}
         {!fetching && !error ? (
           <>
-            <View style={styles.header}>
-              <View style={styles.headerLeft}>
-                <Text style={styles.headerTitle}>My Todos</Text>
-                <Text style={styles.headerSubtitle}>
-                  {data.todoCount} tasks
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.createButton}
-                onPress={() => setShowCreateForm(true)}
-              >
-                <Text style={styles.createButtonText}>+ Create</Text>
-              </TouchableOpacity>
-            </View>
+            <Header
+              todoCount={todoCount}
+              setShowCreateForm={setShowCreateForm}
+            />
             <FlatList
               data={data.todos || []}
               keyExtractor={item => item.id}

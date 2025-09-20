@@ -14,16 +14,18 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    todoCount\n  }\n": typeof types.TodosDocument,
+    "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    ...HeaderFragment\n  }\n": typeof types.TodosDocument,
     "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": typeof types.CreateTodoDocument,
     "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": typeof types.UpdateTodoDocument,
     "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n      todo {\n        id\n      }\n    }\n  }\n": typeof types.DeleteTodoDocument,
+    "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n": typeof types.HeaderFragmentFragmentDoc,
 };
 const documents: Documents = {
-    "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    todoCount\n  }\n": types.TodosDocument,
+    "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    ...HeaderFragment\n  }\n": types.TodosDocument,
     "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": types.CreateTodoDocument,
     "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      errors\n      todo {\n        id\n        title\n        content\n      }\n    }\n  }\n": types.UpdateTodoDocument,
     "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n      todo {\n        id\n      }\n    }\n  }\n": types.DeleteTodoDocument,
+    "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n": types.HeaderFragmentFragmentDoc,
 };
 
 /**
@@ -43,7 +45,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    todoCount\n  }\n"): (typeof documents)["\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    todoCount\n  }\n"];
+export function graphql(source: "\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    ...HeaderFragment\n  }\n"): (typeof documents)["\n  query Todos {\n    todos {\n      id\n      title\n      content\n    }\n    ...HeaderFragment\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -56,6 +58,10 @@ export function graphql(source: "\n  mutation UpdateTodo($input: UpdateTodoInput
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n      todo {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n      todo {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n"): (typeof documents)["\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
