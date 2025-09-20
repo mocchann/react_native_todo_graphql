@@ -14,7 +14,6 @@ import {
   useColorScheme,
   View,
   TouchableOpacity,
-  TextInput,
   Alert,
 } from 'react-native';
 import {
@@ -22,29 +21,28 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { Provider, useMutation, useQuery } from 'urql';
-import { urqlClient } from './urqlClient';
+import { urqlClient } from './graphql/urqlClient';
 import { graphql } from './generated';
+import { useFragment } from './generated/fragment-masking';
+import { Header, HeaderFragment } from './components/Header';
+import { CreateForm, CreateTodoFragment } from './components/CreateForm';
+import { UpdateForm } from './components/UpdateForm';
 
-const TodoDocument = graphql(`
+const TodosDocument = graphql(`
   query Todos {
     todos {
       id
       title
       content
     }
-    todoCount
+    ...HeaderFragment
   }
 `);
 
 const CreateTodoDocument = graphql(`
   mutation CreateTodo($input: CreateTodoInput!) {
     createTodo(input: $input) {
-      errors
-      todo {
-        id
-        title
-        content
-      }
+      ...CreateTodoFragment
     }
   }
 `);
@@ -52,12 +50,7 @@ const CreateTodoDocument = graphql(`
 const UpdateTodoDocument = graphql(`
   mutation UpdateTodo($input: UpdateTodoInput!) {
     updateTodo(input: $input) {
-      errors
-      todo {
-        id
-        title
-        content
-      }
+      ...UpdateTodoFragment
     }
   }
 `);
@@ -89,10 +82,15 @@ function App() {
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
-  const [{ data, fetching, error }] = useQuery({ query: TodoDocument });
+
+  const [{ data, fetching, error }] = useQuery({ query: TodosDocument });
+  const headerData = useFragment(HeaderFragment, data);
+  const todoCount = headerData?.todoCount ?? 0;
+
   const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
   const [updatetodoResult, updateTodo] = useMutation(UpdateTodoDocument);
   const [deleteTodoResult, deleteTodo] = useMutation(DeleteTodoDocument);
+
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [newTodoTitle, setNewTodoTitle] = useState('');
@@ -114,6 +112,16 @@ function AppContent() {
       if (result.error) {
         console.error('Oh, no!', result.error);
         return;
+      }
+      if (result.data?.createTodo) {
+        const createData = useFragment(
+          CreateTodoFragment,
+          result.data.createTodo,
+        );
+        if (createData?.errors && createData.errors.length > 0) {
+          Alert.alert('Error', createData.errors.join(', '));
+          return;
+        }
       }
     });
     handleCancelCreate();
@@ -185,27 +193,16 @@ function AppContent() {
         {error ? <Text>{String(error)}</Text> : null}
         {!fetching && !error ? (
           <>
-            <View style={styles.header}>
-              <View style={styles.headerLeft}>
-                <Text style={styles.headerTitle}>My Todos</Text>
-                <Text style={styles.headerSubtitle}>
-                  {data.todoCount} tasks
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.createButton}
-                onPress={() => setShowCreateForm(true)}
-              >
-                <Text style={styles.createButtonText}>+ Create</Text>
-              </TouchableOpacity>
-            </View>
+            <Header
+              todoCount={todoCount}
+              setShowCreateForm={setShowCreateForm}
+            />
             <FlatList
               data={data.todos || []}
               keyExtractor={item => item.id}
               ListHeaderComponent={
                 showCreateForm ? (
                   <CreateForm
-                    styles={styles}
                     newTodoTitle={newTodoTitle}
                     setNewTodoTitle={setNewTodoTitle}
                     newTodoContent={newTodoContent}
@@ -215,7 +212,6 @@ function AppContent() {
                   />
                 ) : showUpdateForm && selectedTodo ? (
                   <UpdateForm
-                    styles={styles}
                     newTodoTitle={newTodoTitle}
                     setNewTodoTitle={setNewTodoTitle}
                     newTodoContent={newTodoContent}
@@ -271,37 +267,6 @@ const createStyles = (safeAreaInsets: {
       paddingLeft: safeAreaInsets.left + 20,
       paddingRight: safeAreaInsets.right + 20,
     },
-    header: {
-      marginBottom: 24,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-end',
-    },
-    headerLeft: {
-      flex: 1,
-    },
-    headerTitle: {
-      fontSize: 32,
-      fontWeight: '700',
-      color: '#1a1a1a',
-      marginBottom: 4,
-    },
-    headerSubtitle: {
-      fontSize: 16,
-      color: '#6b7280',
-      fontWeight: '500',
-    },
-    createButton: {
-      backgroundColor: '#3b82f6',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 20,
-    },
-    createButtonText: {
-      color: '#ffffff',
-      fontSize: 14,
-      fontWeight: '600',
-    },
     listContainer: {
       paddingBottom: 20,
     },
@@ -342,217 +307,6 @@ const createStyles = (safeAreaInsets: {
       backgroundColor: '#3b82f6',
       marginLeft: 12,
     },
-    createForm: {
-      backgroundColor: '#ffffff',
-      borderRadius: 16,
-      padding: 20,
-      marginBottom: 16,
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 3,
-    },
-    formTitleRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    formTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#1a1a1a',
-    },
-    deleteButton: {
-      backgroundColor: '#ef4444',
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 6,
-    },
-    deleteButtonText: {
-      color: '#ffffff',
-      fontSize: 12,
-      fontWeight: '600',
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: '#e5e7eb',
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      fontSize: 16,
-      color: '#1a1a1a',
-      backgroundColor: '#f9fafb',
-      marginBottom: 12,
-    },
-    textArea: {
-      height: 80,
-      textAlignVertical: 'top',
-    },
-    formButtons: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: 12,
-    },
-    cancelButton: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: '#d1d5db',
-    },
-    cancelButtonText: {
-      color: '#6b7280',
-      fontSize: 14,
-      fontWeight: '500',
-    },
-    submitButton: {
-      backgroundColor: '#3b82f6',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-    },
-    submitButtonText: {
-      color: '#ffffff',
-      fontSize: 14,
-      fontWeight: '600',
-    },
   });
 
 export default App;
-
-type CreateFormProps = {
-  styles: ReturnType<typeof createStyles>;
-  newTodoTitle: string;
-  setNewTodoTitle: (t: string) => void;
-  newTodoContent: string;
-  setNewTodoContent: (t: string) => void;
-  handleCancelCreate: () => void;
-  handleCreateTodo: (title: string, content: string) => void;
-};
-
-const CreateForm = ({
-  styles,
-  newTodoTitle,
-  setNewTodoTitle,
-  newTodoContent,
-  setNewTodoContent,
-  handleCancelCreate,
-  handleCreateTodo,
-}: CreateFormProps) => {
-  return (
-    <View style={styles.createForm}>
-      <Text style={styles.formTitle}>New todo</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Input title"
-        value={newTodoTitle}
-        onChangeText={setNewTodoTitle}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Input content"
-        value={newTodoContent}
-        onChangeText={setNewTodoContent}
-        multiline
-        numberOfLines={3}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <View style={styles.formButtons}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancelCreate}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={() => handleCreateTodo(newTodoTitle, newTodoContent)}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
-
-type UpdateFormProps = {
-  styles: ReturnType<typeof createStyles>;
-  newTodoTitle: string;
-  setNewTodoTitle: (t: string) => void;
-  newTodoContent: string;
-  setNewTodoContent: (t: string) => void;
-  handleCancelCreate: () => void;
-  todoId: number;
-  handleUpdateTodo: (todoId: number, title: string, content: string) => void;
-  handleDeleteTodo: (todoId: number) => void;
-};
-
-const UpdateForm = ({
-  styles,
-  newTodoTitle,
-  setNewTodoTitle,
-  newTodoContent,
-  setNewTodoContent,
-  handleCancelCreate,
-  todoId,
-  handleUpdateTodo,
-  handleDeleteTodo,
-}: UpdateFormProps) => {
-  return (
-    <View style={styles.createForm}>
-      <View style={styles.formTitleRow}>
-        <Text style={styles.formTitle}>Update todo</Text>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeleteTodo(todoId)}
-        >
-          <Text style={styles.deleteButtonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Input title"
-        value={newTodoTitle}
-        onChangeText={setNewTodoTitle}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Input content"
-        value={newTodoContent}
-        onChangeText={setNewTodoContent}
-        multiline
-        numberOfLines={3}
-        placeholderTextColor="#9ca3af"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <View style={styles.formButtons}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancelCreate}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={() => handleUpdateTodo(todoId, newTodoTitle, newTodoContent)}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
