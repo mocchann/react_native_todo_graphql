@@ -267,37 +267,6 @@ const createStyles = (safeAreaInsets: {
       paddingLeft: safeAreaInsets.left + 20,
       paddingRight: safeAreaInsets.right + 20,
     },
-    header: {
-      marginBottom: 24,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-end',
-    },
-    headerLeft: {
-      flex: 1,
-    },
-    headerTitle: {
-      fontSize: 32,
-      fontWeight: '700',
-      color: '#1a1a1a',
-      marginBottom: 4,
-    },
-    headerSubtitle: {
-      fontSize: 16,
-      color: '#6b7280',
-      fontWeight: '500',
-    },
-    createButton: {
-      backgroundColor: '#3b82f6',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 20,
-    },
-    createButtonText: {
-      color: '#ffffff',
-      fontSize: 14,
-      fontWeight: '600',
-    },
     listContainer: {
       paddingBottom: 20,
     },
@@ -337,85 +306,6 @@ const createStyles = (safeAreaInsets: {
       borderRadius: 4,
       backgroundColor: '#3b82f6',
       marginLeft: 12,
-    },
-    createForm: {
-      backgroundColor: '#ffffff',
-      borderRadius: 16,
-      padding: 20,
-      marginBottom: 16,
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 3,
-    },
-    formTitleRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    formTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#1a1a1a',
-    },
-    deleteButton: {
-      backgroundColor: '#ef4444',
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 6,
-    },
-    deleteButtonText: {
-      color: '#ffffff',
-      fontSize: 12,
-      fontWeight: '600',
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: '#e5e7eb',
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      fontSize: 16,
-      color: '#1a1a1a',
-      backgroundColor: '#f9fafb',
-      marginBottom: 12,
-    },
-    textArea: {
-      height: 80,
-      textAlignVertical: 'top',
-    },
-    formButtons: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      gap: 12,
-    },
-    cancelButton: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: '#d1d5db',
-    },
-    cancelButtonText: {
-      color: '#6b7280',
-      fontSize: 14,
-      fontWeight: '500',
-    },
-    submitButton: {
-      backgroundColor: '#3b82f6',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-    },
-    submitButtonText: {
-      color: '#ffffff',
-      fontSize: 14,
-      fontWeight: '600',
     },
   });
 
