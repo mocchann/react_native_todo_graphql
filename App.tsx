@@ -13,7 +13,6 @@ import {
   Text,
   useColorScheme,
   View,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 import {
@@ -27,14 +26,11 @@ import { useFragment } from './generated/fragment-masking';
 import { Header, HeaderFragment } from './components/Header';
 import { CreateForm, CreateTodoFragment } from './components/CreateForm';
 import { UpdateForm } from './components/UpdateForm';
+import { TodoCard, TodosFragment } from './components/TodoCard';
 
 const TodosDocument = graphql(`
   query Todos {
-    todos {
-      id
-      title
-      content
-    }
+    ...TodosFragment
     ...HeaderFragment
   }
 `);
@@ -76,16 +72,37 @@ function App() {
   );
 }
 
+const createStyles = (safeAreaInsets: {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#f8f9fa',
+      paddingTop: safeAreaInsets.top + 20,
+      paddingBottom: safeAreaInsets.bottom + 20,
+      paddingLeft: safeAreaInsets.left + 20,
+      paddingRight: safeAreaInsets.right + 20,
+    },
+    listContainer: {
+      paddingBottom: 20,
+    },
+  });
+
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
 
   const [{ data, fetching, error }] = useQuery({ query: TodosDocument });
+  const todosData = useFragment(TodosFragment, data);
   const headerData = useFragment(HeaderFragment, data);
   const todoCount = headerData?.todoCount ?? 0;
 
   const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
-  const [updatetodoResult, updateTodo] = useMutation(UpdateTodoDocument);
+  const [updateTodoResult, updateTodo] = useMutation(UpdateTodoDocument);
   const [deleteTodoResult, deleteTodo] = useMutation(DeleteTodoDocument);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -179,7 +196,7 @@ function AppContent() {
     setSelectedTodo(null);
   };
 
-  if (!data) {
+  if (!todosData) {
     return null;
   }
 
@@ -195,7 +212,7 @@ function AppContent() {
               setShowCreateForm={setShowCreateForm}
             />
             <FlatList
-              data={data.todos || []}
+              data={todosData.todos || []}
               keyExtractor={item => item.id}
               ListHeaderComponent={
                 showCreateForm ? (
@@ -221,23 +238,13 @@ function AppContent() {
                 ) : null
               }
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.todoCard}
-                  onPress={() => {
-                    setSelectedTodo(item);
-                    setNewTodoTitle(item.title || '');
-                    setNewTodoContent(item.content || '');
-                    setShowUpdateForm(true);
-                  }}
-                >
-                  <View style={styles.todoContent}>
-                    <Text style={styles.todoTitle}>{item.title}</Text>
-                    {item.content && (
-                      <Text style={styles.todoDescription}>{item.content}</Text>
-                    )}
-                  </View>
-                  <View style={styles.todoIndicator} />
-                </TouchableOpacity>
+                <TodoCard
+                  item={item}
+                  setSelectedTodo={setSelectedTodo}
+                  setNewTodoTitle={setNewTodoTitle}
+                  setNewTodoContent={setNewTodoContent}
+                  setShowUpdateForm={setShowUpdateForm}
+                />
               )}
               contentContainerStyle={styles.listContainer}
               showsVerticalScrollIndicator={false}
@@ -248,62 +255,5 @@ function AppContent() {
     </>
   );
 }
-
-const createStyles = (safeAreaInsets: {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#f8f9fa',
-      paddingTop: safeAreaInsets.top + 20,
-      paddingBottom: safeAreaInsets.bottom + 20,
-      paddingLeft: safeAreaInsets.left + 20,
-      paddingRight: safeAreaInsets.right + 20,
-    },
-    listContainer: {
-      paddingBottom: 20,
-    },
-    todoCard: {
-      backgroundColor: '#ffffff',
-      borderRadius: 16,
-      padding: 20,
-      marginBottom: 12,
-      flexDirection: 'row',
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 3,
-    },
-    todoContent: {
-      flex: 1,
-    },
-    todoTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#1a1a1a',
-      marginBottom: 4,
-    },
-    todoDescription: {
-      fontSize: 14,
-      color: '#6b7280',
-      lineHeight: 20,
-    },
-    todoIndicator: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: '#3b82f6',
-      marginLeft: 12,
-    },
-  });
 
 export default App;
