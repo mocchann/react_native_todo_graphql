@@ -4,9 +4,11 @@ import {
   fetchExchange,
   useQuery,
   useMutation,
-  UseQueryArgs,
 } from 'urql';
-import { DocumentNode } from 'graphql';
+import { useFragment } from '../generated/fragment-masking';
+import { TodosFragment } from '../components/TodoCard';
+import { HeaderFragment } from '../components/Header';
+import { CreateTodoFragment } from '../components/CreateForm';
 
 export const GRAPHQL_ENDPOINT = 'http://localhost:3000/graphql';
 
@@ -16,56 +18,51 @@ export const urqlClient = createClient({
   preferGetMethod: false,
 });
 
-// Query用の型定義
-type QueryOptions<T = any> = Omit<UseQueryArgs<any>, 'query'> & {
-  query: DocumentNode;
-};
-
-// Mutation用の型定義
-type MutationOptions<T = any> = {
-  query: DocumentNode;
-  variables?: any;
-  context?: any;
-};
-
-/**
- * GraphQLクライアント層
- *
- * 目的:
- * 1. urqlの直接的な依存を隠蔽
- * 2. 統一されたAPIでクエリとミューテーションを実行
- * 3. 将来的にクライアント実装を変更する際の影響範囲を限定
- * 4. ビジネスロジックとGraphQL実装の分離
- */
-export interface GraphQLClient {
-  query: <T = any>(options: QueryOptions<T>) => ReturnType<typeof useQuery<T>>;
-  mutation: <T = any>(
-    options: MutationOptions<T>,
-  ) => ReturnType<typeof useMutation<T>>;
-}
-
-/**
- * GraphQLクライアントフック
- *
- * urqlClientで設定されたurqlクライアントを使用して、
- * 統一されたAPIでGraphQL操作を実行する
- */
-export const useGraphQLClient = (): GraphQLClient => {
+export const useGraphQLClient = () => {
   return {
-    query: <T = any>(options: QueryOptions<T>) => {
-      return useQuery<T>(options as any);
+    query: (options: any) => {
+      const [result] = useQuery(options);
+
+      if (options.query?.definitions?.[0]?.name?.value === 'Todos') {
+        const todosData = useFragment(TodosFragment, result.data);
+        const headerData = useFragment(HeaderFragment, result.data);
+
+        return [
+          {
+            ...result,
+            todosData,
+            headerData,
+          } as any,
+        ];
+      }
+
+      return [result];
     },
-    mutation: <T = any>(options: MutationOptions<T>) => {
-      return useMutation<T>(options.query);
+    mutation: (query: any) => {
+      const [result, executeMutation] = useMutation(query);
+
+      if (query?.definitions?.[0]?.name?.value === 'CreateTodo') {
+        const wrappedExecuteMutation = async (variables: any) => {
+          const mutationResult = await executeMutation(variables);
+
+          if (mutationResult.data?.createTodo) {
+            const createData = useFragment(
+              CreateTodoFragment,
+              mutationResult.data.createTodo,
+            );
+            return {
+              ...mutationResult,
+              createData,
+            } as any;
+          }
+
+          return mutationResult;
+        };
+
+        return [result, wrappedExecuteMutation as any];
+      }
+
+      return [result, executeMutation];
     },
   };
-};
-
-// 個別のフックも提供（より直接的な使用を希望する場合）
-export const useGraphQLQuery = <T = any>(options: QueryOptions<T>) => {
-  return useQuery<T>(options as any);
-};
-
-export const useGraphQLMutation = <T = any>(options: MutationOptions<T>) => {
-  return useMutation<T>(options.query);
 };
