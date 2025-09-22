@@ -94,7 +94,7 @@ type Props = {
   setNewTodoTitle: (newTitle: string) => void;
   newTodoContent: string;
   setNewTodoContent: (newTodo: string) => void;
-  handleCancelCreate: () => void;
+  handleCancelTodo: () => void;
   createTodo: (
     variables: CreateTodoMutationVariables,
   ) => Promise<OperationResult<CreateTodoMutation> & { createData?: any }>;
@@ -105,7 +105,7 @@ export const CreateForm = ({
   setNewTodoTitle,
   newTodoContent,
   setNewTodoContent,
-  handleCancelCreate,
+  handleCancelTodo,
   createTodo,
 }: Props) => {
   const handleCreateTodo = (title: string, content: string) => {
@@ -125,7 +125,7 @@ export const CreateForm = ({
         return;
       }
     });
-    handleCancelCreate();
+    handleCancelTodo();
   };
 
   return (
@@ -154,7 +154,7 @@ export const CreateForm = ({
       <View style={styles.formButtons}>
         <TouchableOpacity
           style={styles.cancelButton}
-          onPress={handleCancelCreate}
+          onPress={handleCancelTodo}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>

@@ -114,7 +114,7 @@ type UpdateFormProps = {
   setNewTodoTitle: (t: string) => void;
   newTodoContent: string;
   setNewTodoContent: (t: string) => void;
-  handleCancelCreate: () => void;
+  handleCancelTodo: () => void;
   todoId: number;
   handleUpdateTodo: (todoId: number, title: string, content: string) => void;
   handleDeleteTodo: (todoId: number) => void;
@@ -125,7 +125,7 @@ export const UpdateForm = ({
   setNewTodoTitle,
   newTodoContent,
   setNewTodoContent,
-  handleCancelCreate,
+  handleCancelTodo,
   todoId,
   handleUpdateTodo,
   handleDeleteTodo,
@@ -164,7 +164,7 @@ export const UpdateForm = ({
       <View style={styles.formButtons}>
         <TouchableOpacity
           style={styles.cancelButton}
-          onPress={handleCancelCreate}
+          onPress={handleCancelTodo}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>

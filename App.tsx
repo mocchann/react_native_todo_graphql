@@ -133,7 +133,7 @@ function AppContent() {
         return;
       }
     });
-    handleCancelCreate();
+    handleCancelTodo();
   };
 
   const handleDeleteTodo = (todoId: number) => {
@@ -159,10 +159,10 @@ function AppContent() {
           }),
       },
     ]);
-    handleCancelCreate();
+    handleCancelTodo();
   };
 
-  const handleCancelCreate = () => {
+  const handleCancelTodo = () => {
     setNewTodoTitle('');
     setNewTodoContent('');
     setShowCreateForm(false);
@@ -195,7 +195,7 @@ function AppContent() {
                     setNewTodoTitle={setNewTodoTitle}
                     newTodoContent={newTodoContent}
                     setNewTodoContent={setNewTodoContent}
-                    handleCancelCreate={handleCancelCreate}
+                    handleCancelTodo={handleCancelTodo}
                     createTodo={createTodo}
                   />
                 ) : showUpdateForm && selectedTodo ? (
@@ -204,7 +204,7 @@ function AppContent() {
                     setNewTodoTitle={setNewTodoTitle}
                     newTodoContent={newTodoContent}
                     setNewTodoContent={setNewTodoContent}
-                    handleCancelCreate={handleCancelCreate}
+                    handleCancelTodo={handleCancelTodo}
                     todoId={Number(selectedTodo.id)}
                     handleUpdateTodo={handleUpdateTodo}
                     handleDeleteTodo={handleDeleteTodo}
