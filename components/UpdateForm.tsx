@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { graphql } from '../generated';
 import {
+  DeleteTodoMutation,
+  DeleteTodoMutationVariables,
   UpdateTodoMutation,
   UpdateTodoMutationVariables,
 } from '../generated/graphql';
@@ -106,7 +108,7 @@ export const UpdateTodoFragment = graphql(`
   }
 `);
 
-export const DeleteTodoDocument = graphql(`
+export const DeleteTodoFragment = graphql(`
   fragment DeleteTodoFragment on DeleteTodoPayload {
     errors
     todo {
@@ -122,10 +124,12 @@ type UpdateFormProps = {
   setNewTodoContent: (t: string) => void;
   handleCancelTodo: () => void;
   todoId: number;
-  handleDeleteTodo: (todoId: number) => void;
   updateTodo: (
     variables: UpdateTodoMutationVariables,
   ) => Promise<OperationResult<UpdateTodoMutation> & { updateData?: any }>;
+  deleteTodo: (
+    variables: DeleteTodoMutationVariables,
+  ) => Promise<OperationResult<DeleteTodoMutation> & { deleteData?: any }>;
 };
 
 export const UpdateForm = ({
@@ -135,8 +139,8 @@ export const UpdateForm = ({
   setNewTodoContent,
   handleCancelTodo,
   todoId,
-  handleDeleteTodo,
   updateTodo,
+  deleteTodo,
 }: UpdateFormProps) => {
   const handleUpdateTodo = (todoId: number, title: string, content: string) => {
     if (!todoId || !title.trim() || !content.trim()) {
@@ -156,6 +160,32 @@ export const UpdateForm = ({
         return;
       }
     });
+    handleCancelTodo();
+  };
+
+  const handleDeleteTodo = (todoId: number) => {
+    if (!todoId) {
+      Alert.alert('Failed!', 'Invalid todo id');
+      return;
+    }
+    Alert.alert('Are you Sure?', 'Delete the Todo', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('cancel'),
+      },
+      {
+        text: 'OK',
+        onPress: () =>
+          deleteTodo({
+            input: { id: todoId, clientMutationId: String(Date.now()) },
+          }).then((result: any) => {
+            if (result.error) {
+              console.error('Delete failed!', result.error);
+              return;
+            }
+          }),
+      },
+    ]);
     handleCancelTodo();
   };
 

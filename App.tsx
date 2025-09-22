@@ -13,7 +13,6 @@ import {
   Text,
   useColorScheme,
   View,
-  Alert,
 } from 'react-native';
 import {
   SafeAreaProvider,
@@ -115,32 +114,6 @@ function AppContent() {
     content: string | null;
   } | null>(null);
 
-  const handleDeleteTodo = (todoId: number) => {
-    if (!todoId) {
-      Alert.alert('Failed!', 'Invalid todo id');
-      return;
-    }
-    Alert.alert('Are you Sure?', 'Delete the Todo', [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('cancel'),
-      },
-      {
-        text: 'OK',
-        onPress: () =>
-          deleteTodo({
-            input: { id: todoId, clientMutationId: String(Date.now()) },
-          }).then((result: any) => {
-            if (result.error) {
-              console.error('Delete failed!', result.error);
-              return;
-            }
-          }),
-      },
-    ]);
-    handleCancelTodo();
-  };
-
   const handleCancelTodo = () => {
     setNewTodoTitle('');
     setNewTodoContent('');
@@ -185,8 +158,8 @@ function AppContent() {
                     setNewTodoContent={setNewTodoContent}
                     handleCancelTodo={handleCancelTodo}
                     todoId={Number(selectedTodo.id)}
-                    handleDeleteTodo={handleDeleteTodo}
                     updateTodo={updateTodo}
+                    deleteTodo={deleteTodo}
                   />
                 ) : null
               }
