@@ -19,14 +19,13 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { Provider, useMutation, useQuery } from 'urql';
-import { urqlClient } from './graphql/urqlClient';
+import { Provider } from 'urql';
+import { urqlClient, useGraphQLClient } from './graphql/urqlClient';
 import { graphql } from './generated';
-import { useFragment } from './generated/fragment-masking';
-import { Header, HeaderFragment } from './components/Header';
-import { CreateForm, CreateTodoFragment } from './components/CreateForm';
+import { Header } from './components/Header';
+import { CreateForm } from './components/CreateForm';
 import { UpdateForm } from './components/UpdateForm';
-import { TodoCard, TodosFragment } from './components/TodoCard';
+import { TodoCard } from './components/TodoCard';
 
 const TodosDocument = graphql(`
   query Todos {
@@ -95,15 +94,16 @@ const createStyles = (safeAreaInsets: {
 function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
+  const client = useGraphQLClient();
 
-  const [{ data, fetching, error }] = useQuery({ query: TodosDocument });
-  const todosData = useFragment(TodosFragment, data);
-  const headerData = useFragment(HeaderFragment, data);
+  const [{ data, fetching, error, todosData, headerData }] = client.query({
+    query: TodosDocument,
+  });
   const todoCount = headerData?.todoCount ?? 0;
 
-  const [createTodoResult, createTodo] = useMutation(CreateTodoDocument);
-  const [updateTodoResult, updateTodo] = useMutation(UpdateTodoDocument);
-  const [deleteTodoResult, deleteTodo] = useMutation(DeleteTodoDocument);
+  const [createTodoResult, createTodo] = client.mutation(CreateTodoDocument);
+  const [updateTodoResult, updateTodo] = client.mutation(UpdateTodoDocument);
+  const [deleteTodoResult, deleteTodo] = client.mutation(DeleteTodoDocument);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
@@ -114,32 +114,6 @@ function AppContent() {
     title: string | null;
     content: string | null;
   } | null>(null);
-
-  const handleCreateTodo = (title: string, content: string) => {
-    if (!title.trim() || !content.trim()) {
-      Alert.alert('Failed!', 'Please input form');
-      return;
-    }
-    createTodo({
-      input: { title, content, clientMutationId: String(Date.now()) },
-    }).then(result => {
-      if (result.error) {
-        console.error('Oh, no!', result.error);
-        return;
-      }
-      if (result.data?.createTodo) {
-        const createData = useFragment(
-          CreateTodoFragment,
-          result.data.createTodo,
-        );
-        if (createData?.errors && createData.errors.length > 0) {
-          Alert.alert('Error', createData.errors.join(', '));
-          return;
-        }
-      }
-    });
-    handleCancelCreate();
-  };
 
   const handleUpdateTodo = (todoId: number, title: string, content: string) => {
     if (!todoId || !title.trim() || !content.trim()) {
@@ -153,7 +127,7 @@ function AppContent() {
         content,
         clientMutationId: String(Date.now()),
       },
-    }).then(result => {
+    }).then((result: any) => {
       if (result.error) {
         console.error('Oh no!', result.error);
         return;
@@ -177,7 +151,7 @@ function AppContent() {
         onPress: () =>
           deleteTodo({
             input: { id: todoId, clientMutationId: String(Date.now()) },
-          }).then(result => {
+          }).then((result: any) => {
             if (result.error) {
               console.error('Delete failed!', result.error);
               return;
@@ -222,7 +196,7 @@ function AppContent() {
                     newTodoContent={newTodoContent}
                     setNewTodoContent={setNewTodoContent}
                     handleCancelCreate={handleCancelCreate}
-                    handleCreateTodo={handleCreateTodo}
+                    createTodo={createTodo}
                   />
                 ) : showUpdateForm && selectedTodo ? (
                   <UpdateForm
