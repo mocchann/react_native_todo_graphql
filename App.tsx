@@ -115,27 +115,6 @@ function AppContent() {
     content: string | null;
   } | null>(null);
 
-  const handleUpdateTodo = (todoId: number, title: string, content: string) => {
-    if (!todoId || !title.trim() || !content.trim()) {
-      Alert.alert('Failed!', 'Please input form');
-      return;
-    }
-    updateTodo({
-      input: {
-        id: todoId,
-        title,
-        content,
-        clientMutationId: String(Date.now()),
-      },
-    }).then((result: any) => {
-      if (result.error) {
-        console.error('Oh no!', result.error);
-        return;
-      }
-    });
-    handleCancelTodo();
-  };
-
   const handleDeleteTodo = (todoId: number) => {
     if (!todoId) {
       Alert.alert('Failed!', 'Invalid todo id');
@@ -206,8 +185,8 @@ function AppContent() {
                     setNewTodoContent={setNewTodoContent}
                     handleCancelTodo={handleCancelTodo}
                     todoId={Number(selectedTodo.id)}
-                    handleUpdateTodo={handleUpdateTodo}
                     handleDeleteTodo={handleDeleteTodo}
+                    updateTodo={updateTodo}
                   />
                 ) : null
               }

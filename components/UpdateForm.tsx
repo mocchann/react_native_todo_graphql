@@ -1,4 +1,5 @@
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -6,6 +7,11 @@ import {
   View,
 } from 'react-native';
 import { graphql } from '../generated';
+import {
+  UpdateTodoMutation,
+  UpdateTodoMutationVariables,
+} from '../generated/graphql';
+import { OperationResult } from 'urql';
 
 const styles = StyleSheet.create({
   updateForm: {
@@ -116,8 +122,10 @@ type UpdateFormProps = {
   setNewTodoContent: (t: string) => void;
   handleCancelTodo: () => void;
   todoId: number;
-  handleUpdateTodo: (todoId: number, title: string, content: string) => void;
   handleDeleteTodo: (todoId: number) => void;
+  updateTodo: (
+    variables: UpdateTodoMutationVariables,
+  ) => Promise<OperationResult<UpdateTodoMutation> & { updateData?: any }>;
 };
 
 export const UpdateForm = ({
@@ -127,9 +135,30 @@ export const UpdateForm = ({
   setNewTodoContent,
   handleCancelTodo,
   todoId,
-  handleUpdateTodo,
   handleDeleteTodo,
+  updateTodo,
 }: UpdateFormProps) => {
+  const handleUpdateTodo = (todoId: number, title: string, content: string) => {
+    if (!todoId || !title.trim() || !content.trim()) {
+      Alert.alert('Failed!', 'Please input form');
+      return;
+    }
+    updateTodo({
+      input: {
+        id: todoId,
+        title,
+        content,
+        clientMutationId: String(Date.now()),
+      },
+    }).then((result: any) => {
+      if (result.error) {
+        console.error('Oh no!', result.error);
+        return;
+      }
+    });
+    handleCancelTodo();
+  };
+
   return (
     <View style={styles.updateForm}>
       <View style={styles.formTitleRow}>
