@@ -1,4 +1,5 @@
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -6,6 +7,11 @@ import {
   View,
 } from 'react-native';
 import { graphql } from '../generated';
+import { OperationResult } from 'urql';
+import {
+  CreateTodoMutation,
+  CreateTodoMutationVariables,
+} from '../generated/graphql';
 
 const styles = StyleSheet.create({
   createForm: {
@@ -89,7 +95,9 @@ type Props = {
   newTodoContent: string;
   setNewTodoContent: (newTodo: string) => void;
   handleCancelCreate: () => void;
-  handleCreateTodo: (title: string, content: string) => void;
+  createTodo: (
+    variables: CreateTodoMutationVariables,
+  ) => Promise<OperationResult<CreateTodoMutation> & { createData?: any }>;
 };
 
 export const CreateForm = ({
@@ -98,8 +106,28 @@ export const CreateForm = ({
   newTodoContent,
   setNewTodoContent,
   handleCancelCreate,
-  handleCreateTodo,
+  createTodo,
 }: Props) => {
+  const handleCreateTodo = (title: string, content: string) => {
+    if (!title.trim() || !content.trim()) {
+      Alert.alert('Failed!', 'Please input form');
+      return;
+    }
+    createTodo({
+      input: { title, content, clientMutationId: String(Date.now()) },
+    }).then(result => {
+      if (result.error) {
+        console.error('Oh, no!', result.error);
+        return;
+      }
+      if (result.createData?.errors && result.createData.errors.length > 0) {
+        Alert.alert('Error', result.createData.errors.join(', '));
+        return;
+      }
+    });
+    handleCancelCreate();
+  };
+
   return (
     <View style={styles.createForm}>
       <Text style={styles.formTitle}>New todo</Text>
