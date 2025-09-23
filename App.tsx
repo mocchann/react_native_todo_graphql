@@ -98,7 +98,6 @@ function AppContent() {
   const [{ data, fetching, error, todosData, headerData }] = client.query({
     query: TodosDocument,
   });
-  const todoCount = headerData?.todoCount ?? 0;
 
   const [createTodoResult, createTodo] = client.mutation(CreateTodoDocument);
   const [updateTodoResult, updateTodo] = client.mutation(UpdateTodoDocument);
@@ -125,6 +124,8 @@ function AppContent() {
   if (!todosData) {
     return null;
   }
+
+  const todoCount = headerData?.todoCount ?? 0;
 
   return (
     <>
