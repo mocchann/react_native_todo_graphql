@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Todo } from '../generated/graphql';
 import { graphql } from '../generated';
+import { useAppContext } from '../contexts/AppContext';
 
 const styles = StyleSheet.create({
   todoCard: {
@@ -56,34 +57,25 @@ type TodoItem = Pick<Todo, 'id' | 'title' | 'content'>;
 
 type Props = {
   item: TodoItem;
-  setSelectedTodo: (todoItem: TodoItem) => void;
-  setNewTodoTitle: (title: string) => void;
-  setNewTodoContent: (content: string) => void;
-  setShowUpdateForm: (arg: boolean) => void;
 };
 
-export const TodoCard = ({
-  item,
-  setSelectedTodo,
-  setNewTodoTitle,
-  setNewTodoContent,
-  setShowUpdateForm,
-}: Props) => (
-  <TouchableOpacity
-    style={styles.todoCard}
-    onPress={() => {
-      setSelectedTodo(item);
-      setNewTodoTitle(item.title || '');
-      setNewTodoContent(item.content || '');
-      setShowUpdateForm(true);
-    }}
-  >
-    <View style={styles.todoContent}>
-      <Text style={styles.todoTitle}>{item.title}</Text>
-      {item.content && (
-        <Text style={styles.todoDescription}>{item.content}</Text>
-      )}
-    </View>
-    <View style={styles.todoIndicator} />
-  </TouchableOpacity>
-);
+export const TodoCard = ({ item }: Props) => {
+  const { actions } = useAppContext();
+
+  return (
+    <TouchableOpacity
+      style={styles.todoCard}
+      onPress={() => {
+        actions.showUpdateForm(item);
+      }}
+    >
+      <View style={styles.todoContent}>
+        <Text style={styles.todoTitle}>{item.title}</Text>
+        {item.content && (
+          <Text style={styles.todoDescription}>{item.content}</Text>
+        )}
+      </View>
+      <View style={styles.todoIndicator} />
+    </TouchableOpacity>
+  );
+};

@@ -14,6 +14,7 @@ import {
   UpdateTodoMutationVariables,
 } from '../generated/graphql';
 import { OperationResult } from 'urql';
+import { useAppContext } from '../contexts/AppContext';
 
 const styles = StyleSheet.create({
   updateForm: {
@@ -118,11 +119,6 @@ export const DeleteTodoFragment = graphql(`
 `);
 
 type UpdateFormProps = {
-  newTodoTitle: string;
-  setNewTodoTitle: (t: string) => void;
-  newTodoContent: string;
-  setNewTodoContent: (t: string) => void;
-  handleCancelTodo: () => void;
   todoId: number;
   updateTodo: (
     variables: UpdateTodoMutationVariables,
@@ -133,15 +129,12 @@ type UpdateFormProps = {
 };
 
 export const UpdateForm = ({
-  newTodoTitle,
-  setNewTodoTitle,
-  newTodoContent,
-  setNewTodoContent,
-  handleCancelTodo,
   todoId,
   updateTodo,
   deleteTodo,
 }: UpdateFormProps) => {
+  const { state, actions } = useAppContext();
+
   const handleUpdateTodo = (todoId: number, title: string, content: string) => {
     if (!todoId || !title.trim() || !content.trim()) {
       Alert.alert('Failed!', 'Please input form');
@@ -160,7 +153,7 @@ export const UpdateForm = ({
         return;
       }
     });
-    handleCancelTodo();
+    actions.cancelTodo();
   };
 
   const handleDeleteTodo = (todoId: number) => {
@@ -186,7 +179,7 @@ export const UpdateForm = ({
           }),
       },
     ]);
-    handleCancelTodo();
+    actions.cancelTodo();
   };
 
   return (
@@ -203,8 +196,8 @@ export const UpdateForm = ({
       <TextInput
         style={styles.input}
         placeholder="Input title"
-        value={newTodoTitle}
-        onChangeText={setNewTodoTitle}
+        value={state.newTodoTitle}
+        onChangeText={actions.setTodoTitle}
         placeholderTextColor="#9ca3af"
         autoCapitalize="none"
         autoCorrect={false}
@@ -212,8 +205,8 @@ export const UpdateForm = ({
       <TextInput
         style={[styles.input, styles.textArea]}
         placeholder="Input content"
-        value={newTodoContent}
-        onChangeText={setNewTodoContent}
+        value={state.newTodoContent}
+        onChangeText={actions.setTodoContent}
         multiline
         numberOfLines={3}
         placeholderTextColor="#9ca3af"
@@ -223,13 +216,15 @@ export const UpdateForm = ({
       <View style={styles.formButtons}>
         <TouchableOpacity
           style={styles.cancelButton}
-          onPress={handleCancelTodo}
+          onPress={actions.cancelTodo}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => handleUpdateTodo(todoId, newTodoTitle, newTodoContent)}
+          onPress={() =>
+            handleUpdateTodo(todoId, state.newTodoTitle, state.newTodoContent)
+          }
         >
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>

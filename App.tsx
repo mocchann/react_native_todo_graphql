@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useReducer } from 'react';
+import React from 'react';
 import {
   FlatList,
   StatusBar,
@@ -21,6 +21,7 @@ import {
 import { Provider } from 'urql';
 import { urqlClient, useGraphQLClient } from './graphql/urqlClient';
 import { graphql } from './generated';
+import { AppProvider, useAppContext } from './contexts/AppContext';
 import { Header } from './components/Header';
 import { CreateForm } from './components/CreateForm';
 import { UpdateForm } from './components/UpdateForm';
@@ -57,107 +58,16 @@ const DeleteTodoDocument = graphql(`
   }
 `);
 
-type AppState = {
-  showCreateForm: boolean;
-  showUpdateForm: boolean;
-  newTodoTitle: string;
-  newTodoContent: string;
-  selectedTodo: {
-    id: string;
-    title: string | null;
-    content: string | null;
-  } | null;
-};
-
-type AppAction =
-  | { type: 'SHOW_CREATE_FORM' }
-  | { type: 'SHOW_UPDATE_FORM' }
-  | { type: 'HIDE_FORMS' }
-  | { type: 'SET_TODO_TITLE'; payload: string }
-  | { type: 'SET_TODO_CONTENT'; payload: string }
-  | {
-      type: 'SET_SELECTED_TODO';
-      payload: {
-        id: string;
-        title: string | null;
-        content: string | null;
-      } | null;
-    }
-  | { type: 'RESET_FORM' }
-  | { type: 'CANCEL_TODO' };
-
-const initialState: AppState = {
-  showCreateForm: false,
-  showUpdateForm: false,
-  newTodoTitle: '',
-  newTodoContent: '',
-  selectedTodo: null,
-};
-
-function appReducer(state: AppState, action: AppAction): AppState {
-  switch (action.type) {
-    case 'SHOW_CREATE_FORM':
-      return {
-        ...state,
-        showCreateForm: true,
-        showUpdateForm: false,
-        selectedTodo: null,
-      };
-    case 'SHOW_UPDATE_FORM':
-      return {
-        ...state,
-        showCreateForm: false,
-        showUpdateForm: true,
-      };
-    case 'HIDE_FORMS':
-      return {
-        ...state,
-        showCreateForm: false,
-        showUpdateForm: false,
-      };
-    case 'SET_TODO_TITLE':
-      return {
-        ...state,
-        newTodoTitle: action.payload,
-      };
-    case 'SET_TODO_CONTENT':
-      return {
-        ...state,
-        newTodoContent: action.payload,
-      };
-    case 'SET_SELECTED_TODO':
-      return {
-        ...state,
-        selectedTodo: action.payload,
-      };
-    case 'RESET_FORM':
-      return {
-        ...state,
-        newTodoTitle: '',
-        newTodoContent: '',
-      };
-    case 'CANCEL_TODO':
-      return {
-        ...state,
-        showCreateForm: false,
-        showUpdateForm: false,
-        newTodoTitle: '',
-        newTodoContent: '',
-        selectedTodo: null,
-      };
-    default:
-      return state;
-  }
-}
-
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
     <Provider value={urqlClient}>
       <SafeAreaProvider>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <AppContent />
+        <AppProvider>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <AppContent />
+        </AppProvider>
       </SafeAreaProvider>
     </Provider>
   );
@@ -187,6 +97,7 @@ function AppContent() {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
   const client = useGraphQLClient();
+  const { state, actions } = useAppContext();
 
   const [{ data, fetching, error, todosData, headerData }] = client.query({
     query: TodosDocument,
@@ -194,27 +105,6 @@ function AppContent() {
   const [createTodoResult, createTodo] = client.mutation(CreateTodoDocument);
   const [updateTodoResult, updateTodo] = client.mutation(UpdateTodoDocument);
   const [deleteTodoResult, deleteTodo] = client.mutation(DeleteTodoDocument);
-
-  const [state, dispatch] = useReducer(appReducer, initialState);
-
-  const handleCancelTodo = () => {
-    dispatch({ type: 'CANCEL_TODO' });
-  };
-
-  const handleShowCreateForm = () => {
-    dispatch({ type: 'SHOW_CREATE_FORM' });
-  };
-
-  const handleShowUpdateForm = (todo: {
-    id: string;
-    title: string | null;
-    content: string | null;
-  }) => {
-    dispatch({ type: 'SET_SELECTED_TODO', payload: todo });
-    dispatch({ type: 'SET_TODO_TITLE', payload: todo.title || '' });
-    dispatch({ type: 'SET_TODO_CONTENT', payload: todo.content || '' });
-    dispatch({ type: 'SHOW_UPDATE_FORM' });
-  };
 
   if (!todosData) {
     return null;
@@ -231,55 +121,23 @@ function AppContent() {
           <>
             <Header
               todoCount={todoCount}
-              setShowCreateForm={handleShowCreateForm}
+              setShowCreateForm={actions.showCreateForm}
             />
             <FlatList
               data={todosData.todos || []}
               keyExtractor={item => item.id}
               ListHeaderComponent={
                 state.showCreateForm ? (
-                  <CreateForm
-                    newTodoTitle={state.newTodoTitle}
-                    setNewTodoTitle={title =>
-                      dispatch({ type: 'SET_TODO_TITLE', payload: title })
-                    }
-                    newTodoContent={state.newTodoContent}
-                    setNewTodoContent={content =>
-                      dispatch({ type: 'SET_TODO_CONTENT', payload: content })
-                    }
-                    handleCancelTodo={handleCancelTodo}
-                    createTodo={createTodo}
-                  />
+                  <CreateForm createTodo={createTodo} />
                 ) : state.showUpdateForm && state.selectedTodo ? (
                   <UpdateForm
-                    newTodoTitle={state.newTodoTitle}
-                    setNewTodoTitle={title =>
-                      dispatch({ type: 'SET_TODO_TITLE', payload: title })
-                    }
-                    newTodoContent={state.newTodoContent}
-                    setNewTodoContent={content =>
-                      dispatch({ type: 'SET_TODO_CONTENT', payload: content })
-                    }
-                    handleCancelTodo={handleCancelTodo}
                     todoId={Number(state.selectedTodo.id)}
                     updateTodo={updateTodo}
                     deleteTodo={deleteTodo}
                   />
                 ) : null
               }
-              renderItem={({ item }) => (
-                <TodoCard
-                  item={item}
-                  setSelectedTodo={todo => handleShowUpdateForm(todo)}
-                  setNewTodoTitle={title =>
-                    dispatch({ type: 'SET_TODO_TITLE', payload: title })
-                  }
-                  setNewTodoContent={content =>
-                    dispatch({ type: 'SET_TODO_CONTENT', payload: content })
-                  }
-                  setShowUpdateForm={() => handleShowUpdateForm(item)}
-                />
-              )}
+              renderItem={({ item }) => <TodoCard item={item} />}
               contentContainerStyle={styles.listContainer}
               showsVerticalScrollIndicator={false}
             />

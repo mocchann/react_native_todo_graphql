@@ -12,6 +12,7 @@ import {
   CreateTodoMutation,
   CreateTodoMutationVariables,
 } from '../generated/graphql';
+import { useAppContext } from '../contexts/AppContext';
 
 const styles = StyleSheet.create({
   createForm: {
@@ -90,24 +91,14 @@ export const CreateTodoFragment = graphql(`
 `);
 
 type Props = {
-  newTodoTitle: string;
-  setNewTodoTitle: (newTitle: string) => void;
-  newTodoContent: string;
-  setNewTodoContent: (newTodo: string) => void;
-  handleCancelTodo: () => void;
   createTodo: (
     variables: CreateTodoMutationVariables,
   ) => Promise<OperationResult<CreateTodoMutation> & { createData?: any }>;
 };
 
-export const CreateForm = ({
-  newTodoTitle,
-  setNewTodoTitle,
-  newTodoContent,
-  setNewTodoContent,
-  handleCancelTodo,
-  createTodo,
-}: Props) => {
+export const CreateForm = ({ createTodo }: Props) => {
+  const { state, actions } = useAppContext();
+
   const handleCreateTodo = (title: string, content: string) => {
     if (!title.trim() || !content.trim()) {
       Alert.alert('Failed!', 'Please input form');
@@ -125,7 +116,7 @@ export const CreateForm = ({
         return;
       }
     });
-    handleCancelTodo();
+    actions.cancelTodo();
   };
 
   return (
@@ -134,8 +125,8 @@ export const CreateForm = ({
       <TextInput
         style={styles.input}
         placeholder="Input title"
-        value={newTodoTitle}
-        onChangeText={setNewTodoTitle}
+        value={state.newTodoTitle}
+        onChangeText={actions.setTodoTitle}
         placeholderTextColor="#9ca3af"
         autoCapitalize="none"
         autoCorrect={false}
@@ -143,8 +134,8 @@ export const CreateForm = ({
       <TextInput
         style={[styles.input, styles.textArea]}
         placeholder="Input content"
-        value={newTodoContent}
-        onChangeText={setNewTodoContent}
+        value={state.newTodoContent}
+        onChangeText={actions.setTodoContent}
         multiline
         numberOfLines={3}
         placeholderTextColor="#9ca3af"
@@ -154,13 +145,15 @@ export const CreateForm = ({
       <View style={styles.formButtons}>
         <TouchableOpacity
           style={styles.cancelButton}
-          onPress={handleCancelTodo}
+          onPress={actions.cancelTodo}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => handleCreateTodo(newTodoTitle, newTodoContent)}
+          onPress={() =>
+            handleCreateTodo(state.newTodoTitle, state.newTodoContent)
+          }
         >
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
