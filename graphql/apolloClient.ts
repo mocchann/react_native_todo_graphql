@@ -12,7 +12,6 @@ import {
 
 export const GRAPHQL_ENDPOINT = 'http://localhost:3000/graphql';
 
-// Apollo Clientの設定
 export const apolloClient = new ApolloClient({
   link: createHttpLink({
     uri: GRAPHQL_ENDPOINT,
@@ -31,7 +30,6 @@ export const apolloClient = new ApolloClient({
   },
 });
 
-// urqlと同じインターフェースを提供するApollo Client実装
 export const useGraphQLClient = () => {
   return {
     query: (options: any) => {
@@ -40,7 +38,6 @@ export const useGraphQLClient = () => {
         errorPolicy: 'all',
       });
 
-      // urqlと同じようにクエリ名に基づいてフラグメントデータを追加
       if ((options.query?.definitions?.[0] as any)?.name?.value === 'Todos') {
         const todosData = useFragment(TodosFragment, data as any);
         const headerData = useFragment(HeaderFragment, data as any);
