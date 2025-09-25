@@ -18,8 +18,8 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { Provider } from 'urql';
-import { urqlClient, useGraphQLClient } from './graphql/urqlClient';
+import { ApolloProvider } from '@apollo/client/react';
+import { apolloClient, useGraphQLClient } from './graphql/apolloClient';
 import { graphql } from './generated';
 import { AppProvider, useAppContext } from './contexts/AppContext';
 import { Header } from './components/Header';
@@ -62,14 +62,14 @@ function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <Provider value={urqlClient}>
+    <ApolloProvider client={apolloClient}>
       <SafeAreaProvider>
         <AppProvider>
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           <AppContent />
         </AppProvider>
       </SafeAreaProvider>
-    </Provider>
+    </ApolloProvider>
   );
 }
 
