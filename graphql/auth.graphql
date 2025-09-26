@@ -1,0 +1,34 @@
+# ユーザー登録
+mutation SignUpUser($input: SignUpInput!) {
+  signUp(input: $input) {
+    user {
+      id
+      email
+    }
+  }
+}
+
+# ユーザーログイン
+mutation SignInUser($input: SignInInput!) {
+  signIn(input: $input) {
+    user {
+      id
+      email
+    }
+  }
+}
+
+# todo: 現在のユーザー情報取得
+# query GetCurrentUser {
+#   me {
+#     id
+#     email
+#   }
+# }
+
+# ログアウト
+mutation SignOutUser($input: SignOutInput!) {
+  signOut(input: $input) {
+    success
+  }
+}
