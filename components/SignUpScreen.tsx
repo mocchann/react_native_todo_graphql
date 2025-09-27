@@ -12,7 +12,18 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppContext } from '../contexts/AppContext';
 import { useGraphQLClient } from '../graphql/apolloClient';
-import { SignUpUserDocument } from '../generated/graphql';
+import { graphql } from '../generated';
+
+const SignUpUserDocument = graphql(`
+  mutation SignUpUser($input: SignUpInput!) {
+    signUp(input: $input) {
+      user {
+        id
+        email
+      }
+    }
+  }
+`);
 
 export const SignUpScreen = () => {
   const { state, actions } = useAppContext();

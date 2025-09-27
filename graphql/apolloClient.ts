@@ -1,6 +1,5 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
-import { DocumentNode } from 'graphql';
 import { useFragment } from '../generated/fragment-masking';
 import { TodosFragment } from '../components/TodoCard';
 import { HeaderFragment } from '../components/Header';
@@ -57,7 +56,7 @@ export const useGraphQLClient = () => {
       return [{ data, fetching: loading, error, refetch }];
     },
 
-    mutation: (query: DocumentNode) => {
+    mutation: (query: any) => {
       const [executeMutation, { data, loading, error }] = useMutation(query, {
         errorPolicy: 'all',
       });

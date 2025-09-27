@@ -16,6 +16,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 type Documents = {
     "\n  fragment CreateTodoFragment on CreateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": typeof types.CreateTodoFragmentFragmentDoc,
     "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n": typeof types.HeaderFragmentFragmentDoc,
+    "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.SignInUserDocument,
+    "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.SignUpUserDocument,
     "\n  fragment TodosFragment on Query {\n    todos {\n      id\n      title\n      content\n    }\n  }\n": typeof types.TodosFragmentFragmentDoc,
     "\n  query Todos {\n    todos {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    todoCount\n  }\n": typeof types.TodosDocument,
     "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n": typeof types.CreateTodoDocument,
@@ -23,11 +25,12 @@ type Documents = {
     "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n    }\n  }\n": typeof types.DeleteTodoDocument,
     "\n  fragment UpdateTodoFragment on UpdateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": typeof types.UpdateTodoFragmentFragmentDoc,
     "\n  fragment DeleteTodoFragment on DeleteTodoPayload {\n    errors\n    todo {\n      id\n    }\n  }\n": typeof types.DeleteTodoFragmentFragmentDoc,
-    "mutation SignUpUser($input: SignUpInput!) {\n  signUp(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignInUser($input: SignInInput!) {\n  signIn(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignOutUser($input: SignOutInput!) {\n  signOut(input: $input) {\n    success\n  }\n}": typeof types.SignUpUserDocument,
 };
 const documents: Documents = {
     "\n  fragment CreateTodoFragment on CreateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": types.CreateTodoFragmentFragmentDoc,
     "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n": types.HeaderFragmentFragmentDoc,
+    "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.SignInUserDocument,
+    "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.SignUpUserDocument,
     "\n  fragment TodosFragment on Query {\n    todos {\n      id\n      title\n      content\n    }\n  }\n": types.TodosFragmentFragmentDoc,
     "\n  query Todos {\n    todos {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    todoCount\n  }\n": types.TodosDocument,
     "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n": types.CreateTodoDocument,
@@ -35,7 +38,6 @@ const documents: Documents = {
     "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n    }\n  }\n": types.DeleteTodoDocument,
     "\n  fragment UpdateTodoFragment on UpdateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": types.UpdateTodoFragmentFragmentDoc,
     "\n  fragment DeleteTodoFragment on DeleteTodoPayload {\n    errors\n    todo {\n      id\n    }\n  }\n": types.DeleteTodoFragmentFragmentDoc,
-    "mutation SignUpUser($input: SignUpInput!) {\n  signUp(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignInUser($input: SignInInput!) {\n  signIn(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignOutUser($input: SignOutInput!) {\n  signOut(input: $input) {\n    success\n  }\n}": types.SignUpUserDocument,
 };
 
 /**
@@ -60,6 +62,14 @@ export function graphql(source: "\n  fragment CreateTodoFragment on CreateTodoPa
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n"): (typeof documents)["\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -88,10 +98,6 @@ export function graphql(source: "\n  fragment UpdateTodoFragment on UpdateTodoPa
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  fragment DeleteTodoFragment on DeleteTodoPayload {\n    errors\n    todo {\n      id\n    }\n  }\n"): (typeof documents)["\n  fragment DeleteTodoFragment on DeleteTodoPayload {\n    errors\n    todo {\n      id\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "mutation SignUpUser($input: SignUpInput!) {\n  signUp(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignInUser($input: SignInInput!) {\n  signIn(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignOutUser($input: SignOutInput!) {\n  signOut(input: $input) {\n    success\n  }\n}"): (typeof documents)["mutation SignUpUser($input: SignUpInput!) {\n  signUp(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignInUser($input: SignInInput!) {\n  signIn(input: $input) {\n    user {\n      id\n      email\n    }\n  }\n}\n\nmutation SignOutUser($input: SignOutInput!) {\n  signOut(input: $input) {\n    success\n  }\n}"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
