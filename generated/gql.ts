@@ -19,10 +19,10 @@ type Documents = {
     "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.SignInUserDocument,
     "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.SignUpUserDocument,
     "\n  fragment TodosFragment on Query {\n    todos {\n      id\n      title\n      content\n    }\n  }\n": typeof types.TodosFragmentFragmentDoc,
-    "\n  query Todos {\n    todos {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    todoCount\n  }\n": typeof types.TodosDocument,
-    "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n": typeof types.CreateTodoDocument,
-    "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n": typeof types.UpdateTodoDocument,
-    "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n    }\n  }\n": typeof types.DeleteTodoDocument,
+    "\n  query Todos {\n    ...TodosFragment\n    ...HeaderFragment\n  }\n": typeof types.TodosDocument,
+    "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      ...CreateTodoFragment\n    }\n  }\n": typeof types.CreateTodoDocument,
+    "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      ...UpdateTodoFragment\n    }\n  }\n": typeof types.UpdateTodoDocument,
+    "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      ...DeleteTodoFragment\n    }\n  }\n": typeof types.DeleteTodoDocument,
     "\n  fragment UpdateTodoFragment on UpdateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": typeof types.UpdateTodoFragmentFragmentDoc,
     "\n  fragment DeleteTodoFragment on DeleteTodoPayload {\n    errors\n    todo {\n      id\n    }\n  }\n": typeof types.DeleteTodoFragmentFragmentDoc,
 };
@@ -32,10 +32,10 @@ const documents: Documents = {
     "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.SignInUserDocument,
     "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.SignUpUserDocument,
     "\n  fragment TodosFragment on Query {\n    todos {\n      id\n      title\n      content\n    }\n  }\n": types.TodosFragmentFragmentDoc,
-    "\n  query Todos {\n    todos {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    todoCount\n  }\n": types.TodosDocument,
-    "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n": types.CreateTodoDocument,
-    "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n": types.UpdateTodoDocument,
-    "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n    }\n  }\n": types.DeleteTodoDocument,
+    "\n  query Todos {\n    ...TodosFragment\n    ...HeaderFragment\n  }\n": types.TodosDocument,
+    "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      ...CreateTodoFragment\n    }\n  }\n": types.CreateTodoDocument,
+    "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      ...UpdateTodoFragment\n    }\n  }\n": types.UpdateTodoDocument,
+    "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      ...DeleteTodoFragment\n    }\n  }\n": types.DeleteTodoDocument,
     "\n  fragment UpdateTodoFragment on UpdateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": types.UpdateTodoFragmentFragmentDoc,
     "\n  fragment DeleteTodoFragment on DeleteTodoPayload {\n    errors\n    todo {\n      id\n    }\n  }\n": types.DeleteTodoFragmentFragmentDoc,
 };
@@ -77,19 +77,19 @@ export function graphql(source: "\n  fragment TodosFragment on Query {\n    todo
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Todos {\n    todos {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    todoCount\n  }\n"): (typeof documents)["\n  query Todos {\n    todos {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    todoCount\n  }\n"];
+export function graphql(source: "\n  query Todos {\n    ...TodosFragment\n    ...HeaderFragment\n  }\n"): (typeof documents)["\n  query Todos {\n    ...TodosFragment\n    ...HeaderFragment\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n"): (typeof documents)["\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n"];
+export function graphql(source: "\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      ...CreateTodoFragment\n    }\n  }\n"): (typeof documents)["\n  mutation CreateTodo($input: CreateTodoInput!) {\n    createTodo(input: $input) {\n      ...CreateTodoFragment\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      todo {\n        id\n        title\n        content\n        createdAt\n        updatedAt\n      }\n      errors\n    }\n  }\n"];
+export function graphql(source: "\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      ...UpdateTodoFragment\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateTodo($input: UpdateTodoInput!) {\n    updateTodo(input: $input) {\n      ...UpdateTodoFragment\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      errors\n    }\n  }\n"];
+export function graphql(source: "\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      ...DeleteTodoFragment\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteTodo($input: DeleteTodoInput!) {\n    deleteTodo(input: $input) {\n      ...DeleteTodoFragment\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

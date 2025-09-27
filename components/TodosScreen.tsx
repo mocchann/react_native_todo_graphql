@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppContext } from '../contexts/AppContext';
 import { useGraphQLClient } from '../graphql/apolloClient';
@@ -9,57 +16,6 @@ import { CreateForm } from './CreateForm';
 import { UpdateForm } from './UpdateForm';
 import { TodoCard } from './TodoCard';
 
-const TodosDocument = graphql(`
-  query Todos {
-    todos {
-      id
-      title
-      content
-      createdAt
-      updatedAt
-    }
-    todoCount
-  }
-`);
-
-const CreateTodoDocument = graphql(`
-  mutation CreateTodo($input: CreateTodoInput!) {
-    createTodo(input: $input) {
-      todo {
-        id
-        title
-        content
-        createdAt
-        updatedAt
-      }
-      errors
-    }
-  }
-`);
-
-const UpdateTodoDocument = graphql(`
-  mutation UpdateTodo($input: UpdateTodoInput!) {
-    updateTodo(input: $input) {
-      todo {
-        id
-        title
-        content
-        createdAt
-        updatedAt
-      }
-      errors
-    }
-  }
-`);
-
-const DeleteTodoDocument = graphql(`
-  mutation DeleteTodo($input: DeleteTodoInput!) {
-    deleteTodo(input: $input) {
-      errors
-    }
-  }
-`);
-
 const createStyles = (insets: { top: number; bottom: number }) =>
   StyleSheet.create({
     container: {
@@ -67,6 +23,9 @@ const createStyles = (insets: { top: number; bottom: number }) =>
       backgroundColor: '#f5f5f5',
       paddingTop: insets.top,
       paddingBottom: insets.bottom,
+    },
+    header: {
+      padding: 16,
     },
     content: {
       flex: 1,
@@ -124,6 +83,37 @@ const createStyles = (insets: { top: number; bottom: number }) =>
     },
   });
 
+const TodosDocument = graphql(`
+  query Todos {
+    ...TodosFragment
+    ...HeaderFragment
+  }
+`);
+
+const CreateTodoDocument = graphql(`
+  mutation CreateTodo($input: CreateTodoInput!) {
+    createTodo(input: $input) {
+      ...CreateTodoFragment
+    }
+  }
+`);
+
+const UpdateTodoDocument = graphql(`
+  mutation UpdateTodo($input: UpdateTodoInput!) {
+    updateTodo(input: $input) {
+      ...UpdateTodoFragment
+    }
+  }
+`);
+
+const DeleteTodoDocument = graphql(`
+  mutation DeleteTodo($input: DeleteTodoInput!) {
+    deleteTodo(input: $input) {
+      ...DeleteTodoFragment
+    }
+  }
+`);
+
 export const TodosScreen = () => {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
@@ -135,8 +125,29 @@ export const TodosScreen = () => {
   });
 
   const { data, fetching, error } = queryResult[0];
-  const todosData = (queryResult[0].data as any)?.todosData;
-  const headerData = (queryResult[0].data as any)?.headerData;
+  const todosData = data?.todos;
+  const todoCount = data?.todoCount;
+
+  // React.useEffect(() => {
+  //   if (data) {
+  //     Alert.alert(
+  //       'デバッグ情報',
+  //       `data: ${data.todos[0].title}\n
+  //       fetching: ${fetching}\n
+  //       error: ${error ? error.message : 'none'}\n
+  //       data keys: ${data ? Object.keys(data).join(', ') : 'null'}\n
+  //       todosData: ${
+  //         todosData
+  //           ? Array.isArray(todosData)
+  //             ? `array(${todosData.length})`
+  //             : typeof todosData
+  //           : 'null'
+  //       }\n
+  //       headerData: ${headerData ? typeof headerData : 'null'}`,
+  //       [{ text: 'OK' }],
+  //     );
+  //   }
+  // }, [data, fetching, error, todosData, headerData]);
   const [createTodoResult, createTodo] = client.mutation(CreateTodoDocument);
   const [updateTodoResult, updateTodo] = client.mutation(UpdateTodoDocument);
   const [deleteTodoResult, deleteTodo] = client.mutation(DeleteTodoDocument);
@@ -169,10 +180,12 @@ export const TodosScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header
-        todoCount={headerData?.todoCount || 0}
-        setShowCreateForm={actions.showCreateForm}
-      />
+      <View style={styles.header}>
+        <Header
+          todoCount={todoCount || 0}
+          setShowCreateForm={actions.showCreateForm}
+        />
+      </View>
 
       <View style={styles.content}>
         {state.showCreateForm && (

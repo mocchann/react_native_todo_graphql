@@ -14,7 +14,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useGraphQLClient } from '../graphql/apolloClient';
 import { graphql } from '../generated';
 
-const SignUpUserDocument = graphql(`
+const SignUpDocument = graphql(`
   mutation SignUpUser($input: SignUpInput!) {
     signUp(input: $input) {
       user {
@@ -28,7 +28,7 @@ const SignUpUserDocument = graphql(`
 export const SignUpScreen = () => {
   const { state, actions } = useAppContext();
   const client = useGraphQLClient();
-  const [signUpResult, signUp] = client.mutation(SignUpUserDocument);
+  const [signUpResult, signUp] = client.mutation(SignUpDocument);
   const safeAreaInsets = useSafeAreaInsets();
 
   const [email, setEmail] = useState('');

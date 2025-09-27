@@ -3,7 +3,6 @@ import { graphql } from '../generated';
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
