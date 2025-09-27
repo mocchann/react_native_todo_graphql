@@ -43,9 +43,14 @@ export const SignInScreen = () => {
     try {
       actions.setLoading(true);
       const result = await signIn({
-        input: {
-          email,
-          password,
+        variables: {
+          input: {
+            input: {
+              email: email,
+              password: password,
+            },
+          },
+          clientMutationId: String(Date.now()),
         },
       });
 

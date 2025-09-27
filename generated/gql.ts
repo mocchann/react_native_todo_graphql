@@ -16,6 +16,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 type Documents = {
     "\n  fragment CreateTodoFragment on CreateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": typeof types.CreateTodoFragmentFragmentDoc,
     "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n": typeof types.HeaderFragmentFragmentDoc,
+    "\n  mutation SignOutUser($input: SignOutInput!) {\n    signOut(input: $input) {\n      success\n    }\n  }\n": typeof types.SignOutUserDocument,
     "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.SignInUserDocument,
     "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.SignUpUserDocument,
     "\n  fragment TodosFragment on Query {\n    todos {\n      id\n      title\n      content\n    }\n  }\n": typeof types.TodosFragmentFragmentDoc,
@@ -29,6 +30,7 @@ type Documents = {
 const documents: Documents = {
     "\n  fragment CreateTodoFragment on CreateTodoPayload {\n    errors\n    todo {\n      id\n      title\n      content\n    }\n  }\n": types.CreateTodoFragmentFragmentDoc,
     "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n": types.HeaderFragmentFragmentDoc,
+    "\n  mutation SignOutUser($input: SignOutInput!) {\n    signOut(input: $input) {\n      success\n    }\n  }\n": types.SignOutUserDocument,
     "\n  mutation SignInUser($input: SignInInput!) {\n    signIn(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.SignInUserDocument,
     "\n  mutation SignUpUser($input: SignUpInput!) {\n    signUp(input: $input) {\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.SignUpUserDocument,
     "\n  fragment TodosFragment on Query {\n    todos {\n      id\n      title\n      content\n    }\n  }\n": types.TodosFragmentFragmentDoc,
@@ -62,6 +64,10 @@ export function graphql(source: "\n  fragment CreateTodoFragment on CreateTodoPa
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n"): (typeof documents)["\n  fragment HeaderFragment on Query {\n    todoCount\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation SignOutUser($input: SignOutInput!) {\n    signOut(input: $input) {\n      success\n    }\n  }\n"): (typeof documents)["\n  mutation SignOutUser($input: SignOutInput!) {\n    signOut(input: $input) {\n      success\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

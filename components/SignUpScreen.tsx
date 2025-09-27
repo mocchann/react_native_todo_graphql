@@ -31,12 +31,13 @@ export const SignUpScreen = () => {
   const [signUpResult, signUp] = client.mutation(SignUpDocument);
   const safeAreaInsets = useSafeAreaInsets();
 
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       Alert.alert('エラー', 'すべてのフィールドを入力してください');
       return;
     }
@@ -54,9 +55,16 @@ export const SignUpScreen = () => {
     try {
       actions.setLoading(true);
       const result = await signUp({
-        input: {
-          email,
-          password,
+        variables: {
+          input: {
+            input: {
+              username,
+              email,
+              password,
+              password_confirmation: confirmPassword,
+            },
+          },
+          clientMutationId: String(Date.now()),
         },
       });
 
@@ -82,6 +90,15 @@ export const SignUpScreen = () => {
         <Text style={styles.title}>アカウント作成</Text>
 
         <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="ユーザー名"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
           <TextInput
             style={styles.input}
             placeholder="メールアドレス"
