@@ -128,26 +128,6 @@ export const TodosScreen = () => {
   const todosData = data?.todos;
   const todoCount = data?.todoCount;
 
-  // React.useEffect(() => {
-  //   if (data) {
-  //     Alert.alert(
-  //       'デバッグ情報',
-  //       `data: ${data.todos[0].title}\n
-  //       fetching: ${fetching}\n
-  //       error: ${error ? error.message : 'none'}\n
-  //       data keys: ${data ? Object.keys(data).join(', ') : 'null'}\n
-  //       todosData: ${
-  //         todosData
-  //           ? Array.isArray(todosData)
-  //             ? `array(${todosData.length})`
-  //             : typeof todosData
-  //           : 'null'
-  //       }\n
-  //       headerData: ${headerData ? typeof headerData : 'null'}`,
-  //       [{ text: 'OK' }],
-  //     );
-  //   }
-  // }, [data, fetching, error, todosData, headerData]);
   const [createTodoResult, createTodo] = client.mutation(CreateTodoDocument);
   const [updateTodoResult, updateTodo] = client.mutation(UpdateTodoDocument);
   const [deleteTodoResult, deleteTodo] = client.mutation(DeleteTodoDocument);
