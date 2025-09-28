@@ -54,14 +54,15 @@ export const SignUpScreen = () => {
 
     try {
       actions.setLoading(true);
+
       const result = await signUp({
         variables: {
           input: {
             input: {
-              username,
-              email,
-              password,
-              password_confirmation: confirmPassword,
+              username: username,
+              email: email,
+              password: password,
+              passwordConfirmation: confirmPassword,
             },
           },
           clientMutationId: String(Date.now()),
