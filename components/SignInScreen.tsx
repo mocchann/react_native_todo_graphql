@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppContext } from '../contexts/AppContext';
-import { useGraphQLClient } from '../graphql/apolloClient';
+import { useMutation } from '@apollo/client/react';
 import { graphql } from '../generated';
+import { SignInUserMutation } from '../generated/graphql';
 
 const SignInDocument = graphql(`
   mutation SignInUser($input: SignInInput!) {
@@ -27,8 +28,7 @@ const SignInDocument = graphql(`
 
 export const SignInScreen = () => {
   const { state, actions } = useAppContext();
-  const client = useGraphQLClient();
-  const [signInResult, signIn] = client.mutation(SignInDocument);
+  const [signIn] = useMutation<SignInUserMutation>(SignInDocument);
   const safeAreaInsets = useSafeAreaInsets();
 
   const [email, setEmail] = useState('');
@@ -49,8 +49,8 @@ export const SignInScreen = () => {
               email: email,
               password: password,
             },
+            clientMutationId: String(Date.now()),
           },
-          clientMutationId: String(Date.now()),
         },
       });
 
@@ -60,8 +60,7 @@ export const SignInScreen = () => {
       } else {
         Alert.alert('エラー', 'ログインに失敗しました');
       }
-    } catch (error) {
-      console.error('SignIn error:', error);
+    } catch (e) {
       Alert.alert('エラー', 'ログインに失敗しました');
     } finally {
       actions.setLoading(false);

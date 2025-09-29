@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  SafeAreaView,
-  Alert,
-} from 'react-native';
+import { View, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@apollo/client/react';
 import { useAppContext } from '../contexts/AppContext';
-import { useGraphQLClient } from '../graphql/apolloClient';
 import { graphql } from '../generated';
 import { Header } from './Header';
 import { CreateForm } from './CreateForm';
@@ -85,60 +78,39 @@ const createStyles = (insets: { top: number; bottom: number }) =>
 
 const TodosDocument = graphql(`
   query Todos {
-    ...TodosFragment
-    ...HeaderFragment
-  }
-`);
-
-const CreateTodoDocument = graphql(`
-  mutation CreateTodo($input: CreateTodoInput!) {
-    createTodo(input: $input) {
-      ...CreateTodoFragment
+    todos {
+      id
+      title
+      content
     }
-  }
-`);
-
-const UpdateTodoDocument = graphql(`
-  mutation UpdateTodo($input: UpdateTodoInput!) {
-    updateTodo(input: $input) {
-      ...UpdateTodoFragment
-    }
-  }
-`);
-
-const DeleteTodoDocument = graphql(`
-  mutation DeleteTodo($input: DeleteTodoInput!) {
-    deleteTodo(input: $input) {
-      ...DeleteTodoFragment
-    }
+    todoCount
   }
 `);
 
 export const TodosScreen = () => {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
-  const client = useGraphQLClient();
   const { state, actions } = useAppContext();
 
-  const queryResult = client.query({
-    query: TodosDocument,
-  });
+  const { data, loading, error } = useQuery(TodosDocument);
 
-  const { data, fetching, error } = queryResult[0];
-  const todosData = data?.todos;
-  const todoCount = data?.todoCount;
+  const todosData =
+    data && typeof data === 'object' && 'todos' in data
+      ? data.todos
+      : undefined;
+  const todoCount =
+    data &&
+    typeof data === 'object' &&
+    'todoCount' in data &&
+    typeof data.todoCount === 'number'
+      ? data.todoCount
+      : 0;
 
-  const [createTodoResult, createTodo] = client.mutation(CreateTodoDocument);
-  const [updateTodoResult, updateTodo] = client.mutation(UpdateTodoDocument);
-  const [deleteTodoResult, deleteTodo] = client.mutation(DeleteTodoDocument);
-
-  if (!todosData) {
+  if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>
-            {fetching ? '読み込み中...' : 'データを取得中...'}
-          </Text>
+          <Text style={styles.loadingText}>読み込み中...</Text>
         </View>
       </SafeAreaView>
     );
@@ -162,45 +134,19 @@ export const TodosScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Header
-          todoCount={todoCount || 0}
+          todoCount={todoCount}
           setShowCreateForm={actions.showCreateForm}
         />
       </View>
 
       <View style={styles.content}>
-        {state.showCreateForm && (
-          <CreateForm
-            createTodo={async variables => {
-              const result = await createTodo(variables);
-              if (result.data?.createTodo) {
-                actions.cancelTodo();
-              }
-              return result;
-            }}
-          />
-        )}
+        {state.showCreateForm && <CreateForm />}
 
         {state.showUpdateForm && state.selectedTodo && (
-          <UpdateForm
-            todoId={parseInt(state.selectedTodo.id)}
-            updateTodo={async variables => {
-              const result = await updateTodo(variables);
-              if (result.data?.updateTodo) {
-                actions.cancelTodo();
-              }
-              return result;
-            }}
-            deleteTodo={async variables => {
-              const result = await deleteTodo(variables);
-              if (result.data?.deleteTodo) {
-                actions.cancelTodo();
-              }
-              return result;
-            }}
-          />
+          <UpdateForm todoId={parseInt(state.selectedTodo.id)} />
         )}
 
-        {todosData.length === 0 ? (
+        {!todosData || !Array.isArray(todosData) || todosData.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               Todoがありません。新しいTodoを作成してください。
@@ -210,7 +156,7 @@ export const TodosScreen = () => {
           <FlatList
             style={styles.list}
             contentContainerStyle={styles.listContent}
-            data={todosData}
+            data={Array.isArray(todosData) ? todosData : []}
             renderItem={renderTodo}
             keyExtractor={item => item.id.toString()}
           />

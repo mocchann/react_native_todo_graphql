@@ -1,7 +1,8 @@
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { useAppContext } from '../contexts/AppContext';
+import { useMutation } from '@apollo/client/react';
 import { graphql } from '../generated';
-import { useGraphQLClient } from '../graphql/apolloClient';
+import { SignOutUserMutation } from '../generated/graphql';
 
 const SignOutDocument = graphql(`
   mutation SignOutUser($input: SignOutInput!) {
@@ -13,23 +14,27 @@ const SignOutDocument = graphql(`
 
 export const ProfileScreen = () => {
   const { state, actions } = useAppContext();
-  const client = useGraphQLClient();
-  const [signOutResult, signOut] = client.mutation(SignOutDocument);
+  const [signOut] = useMutation<SignOutUserMutation>(SignOutDocument);
 
   const handleLogout = () => {
     Alert.alert('ログアウト', 'ログアウトしますか？', [
       { text: 'キャンセル', style: 'cancel' },
       {
         text: 'ログアウト',
-        onPress: () => {
-          signOut({
-            variables: {
-              input: {
-                clientMutationId: String(Date.now()),
+        onPress: async () => {
+          try {
+            await signOut({
+              variables: {
+                input: {
+                  clientMutationId: String(Date.now()),
+                },
               },
-            },
-          });
-          actions.logout();
+            });
+            actions.logout();
+          } catch (error) {
+            console.error('SignOut error:', error);
+            actions.logout();
+          }
         },
       },
     ]);

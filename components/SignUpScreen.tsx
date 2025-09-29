@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppContext } from '../contexts/AppContext';
-import { useGraphQLClient } from '../graphql/apolloClient';
+import { useMutation } from '@apollo/client/react';
 import { graphql } from '../generated';
+import { SignUpUserMutation } from '../generated/graphql';
 
 const SignUpDocument = graphql(`
   mutation SignUpUser($input: SignUpInput!) {
@@ -27,8 +28,7 @@ const SignUpDocument = graphql(`
 
 export const SignUpScreen = () => {
   const { state, actions } = useAppContext();
-  const client = useGraphQLClient();
-  const [signUpResult, signUp] = client.mutation(SignUpDocument);
+  const [signUp] = useMutation<SignUpUserMutation>(SignUpDocument);
   const safeAreaInsets = useSafeAreaInsets();
 
   const [username, setUsername] = useState('');
@@ -64,8 +64,8 @@ export const SignUpScreen = () => {
               password: password,
               passwordConfirmation: confirmPassword,
             },
+            clientMutationId: String(Date.now()),
           },
-          clientMutationId: String(Date.now()),
         },
       });
 

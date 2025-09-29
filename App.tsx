@@ -10,9 +10,9 @@ import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { ApolloProvider } from '@apollo/client/react';
-import { apolloClient } from './graphql/apolloClient';
 import { AppProvider } from './contexts/AppContext';
 import { TabNavigator } from './components/TabNavigator';
+import { apolloClient } from './graphql/apolloClient';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';

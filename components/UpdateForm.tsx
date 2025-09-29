@@ -6,15 +6,33 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useMutation } from '@apollo/client/react';
 import { graphql } from '../generated';
-import {
-  DeleteTodoMutation,
-  DeleteTodoMutationVariables,
-  UpdateTodoMutation,
-  UpdateTodoMutationVariables,
-} from '../generated/graphql';
-import { OperationResult } from 'urql';
 import { useAppContext } from '../contexts/AppContext';
+
+const UpdateTodoDocument = graphql(`
+  mutation UpdateTodo($input: UpdateTodoInput!) {
+    updateTodo(input: $input) {
+      errors
+      todo {
+        id
+        title
+        content
+      }
+    }
+  }
+`);
+
+const DeleteTodoDocument = graphql(`
+  mutation DeleteTodo($input: DeleteTodoInput!) {
+    deleteTodo(input: $input) {
+      errors
+      todo {
+        id
+      }
+    }
+  }
+`);
 
 const styles = StyleSheet.create({
   updateForm: {
@@ -98,62 +116,52 @@ const styles = StyleSheet.create({
   },
 });
 
-export const UpdateTodoFragment = graphql(`
-  fragment UpdateTodoFragment on UpdateTodoPayload {
-    errors
-    todo {
-      id
-      title
-      content
-    }
-  }
-`);
-
-export const DeleteTodoFragment = graphql(`
-  fragment DeleteTodoFragment on DeleteTodoPayload {
-    errors
-    todo {
-      id
-    }
-  }
-`);
-
 type UpdateFormProps = {
   todoId: number;
-  updateTodo: (
-    variables: UpdateTodoMutationVariables,
-  ) => Promise<OperationResult<UpdateTodoMutation> & { updateData?: any }>;
-  deleteTodo: (
-    variables: DeleteTodoMutationVariables,
-  ) => Promise<OperationResult<DeleteTodoMutation> & { deleteData?: any }>;
 };
 
-export const UpdateForm = ({
-  todoId,
-  updateTodo,
-  deleteTodo,
-}: UpdateFormProps) => {
+export const UpdateForm = ({ todoId }: UpdateFormProps) => {
   const { state, actions } = useAppContext();
+  const [updateTodo] = useMutation(UpdateTodoDocument);
+  const [deleteTodo] = useMutation(DeleteTodoDocument);
 
-  const handleUpdateTodo = (todoId: number, title: string, content: string) => {
+  const handleUpdateTodo = async (
+    todoId: number,
+    title: string,
+    content: string,
+  ) => {
     if (!todoId || !title.trim() || !content.trim()) {
       Alert.alert('Failed!', 'Please input form');
       return;
     }
-    updateTodo({
-      input: {
-        id: todoId,
-        title,
-        content,
-        clientMutationId: String(Date.now()),
-      },
-    }).then((result: any) => {
-      if (result.error) {
-        console.error('Oh no!', result.error);
+
+    try {
+      const result = await updateTodo({
+        variables: {
+          input: {
+            id: todoId,
+            title,
+            content,
+            clientMutationId: String(Date.now()),
+          },
+        },
+      });
+
+      if (
+        result.data &&
+        result.data.updateTodo &&
+        result.data.updateTodo.errors &&
+        result.data.updateTodo.errors.length > 0
+      ) {
+        Alert.alert('Error', result.data.updateTodo.errors.join(', '));
         return;
       }
-    });
-    actions.cancelTodo();
+
+      actions.cancelTodo();
+    } catch (error) {
+      console.error('Update todo error:', error);
+      Alert.alert('Error', 'Failed to update todo');
+    }
   };
 
   const handleDeleteTodo = (todoId: number) => {
@@ -168,18 +176,32 @@ export const UpdateForm = ({
       },
       {
         text: 'OK',
-        onPress: () =>
-          deleteTodo({
-            input: { id: todoId, clientMutationId: String(Date.now()) },
-          }).then((result: any) => {
-            if (result.error) {
-              console.error('Delete failed!', result.error);
+        onPress: async () => {
+          try {
+            const result = await deleteTodo({
+              variables: {
+                input: { id: todoId, clientMutationId: String(Date.now()) },
+              },
+            });
+
+            if (
+              result.data &&
+              result.data.deleteTodo &&
+              result.data.deleteTodo.errors &&
+              result.data.deleteTodo.errors.length > 0
+            ) {
+              Alert.alert('Error', result.data.deleteTodo.errors.join(', '));
               return;
             }
-          }),
+
+            actions.cancelTodo();
+          } catch (error) {
+            console.error('Delete todo error:', error);
+            Alert.alert('Error', 'Failed to delete todo');
+          }
+        },
       },
     ]);
-    actions.cancelTodo();
   };
 
   return (
