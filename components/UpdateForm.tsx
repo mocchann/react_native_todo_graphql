@@ -122,8 +122,12 @@ type UpdateFormProps = {
 
 export const UpdateForm = ({ todoId }: UpdateFormProps) => {
   const { state, actions } = useAppContext();
-  const [updateTodo] = useMutation(UpdateTodoDocument);
-  const [deleteTodo] = useMutation(DeleteTodoDocument);
+  const [updateTodo] = useMutation(UpdateTodoDocument, {
+    refetchQueries: ['Todos'],
+  });
+  const [deleteTodo] = useMutation(DeleteTodoDocument, {
+    refetchQueries: ['Todos'],
+  });
 
   const handleUpdateTodo = async (
     todoId: number,
@@ -142,6 +146,7 @@ export const UpdateForm = ({ todoId }: UpdateFormProps) => {
             id: todoId,
             title,
             content,
+            userId: state?.user?.id || '',
             clientMutationId: String(Date.now()),
           },
         },
@@ -180,7 +185,11 @@ export const UpdateForm = ({ todoId }: UpdateFormProps) => {
           try {
             const result = await deleteTodo({
               variables: {
-                input: { id: todoId, clientMutationId: String(Date.now()) },
+                input: {
+                  id: todoId,
+                  userId: state?.user?.id || '',
+                  clientMutationId: String(Date.now()),
+                },
               },
             });
 

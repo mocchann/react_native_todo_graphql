@@ -90,7 +90,9 @@ const styles = StyleSheet.create({
 
 export const CreateForm = () => {
   const { state, actions } = useAppContext();
-  const [createTodo] = useMutation(CreateTodoDocument);
+  const [createTodo] = useMutation(CreateTodoDocument, {
+    refetchQueries: ['Todos'],
+  });
 
   const handleCreateTodo = async (title: string, content: string) => {
     if (!title.trim() || !content.trim()) {
@@ -104,6 +106,7 @@ export const CreateForm = () => {
           input: {
             title,
             content,
+            userId: state.user?.id || '',
             clientMutationId: String(Date.now()),
           },
         },

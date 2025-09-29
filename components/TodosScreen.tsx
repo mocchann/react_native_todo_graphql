@@ -96,7 +96,7 @@ export const TodosScreen = () => {
   }
 
   const { data, loading, error } = useQuery(TodosDocument, {
-    variables: { userId: state.user?.id },
+    variables: { userId: state.user.id },
   });
 
   const todosData =
