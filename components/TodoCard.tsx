@@ -1,6 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Todo } from '../generated/graphql';
-import { graphql } from '../generated';
 import { useAppContext } from '../contexts/AppContext';
 
 const styles = StyleSheet.create({
@@ -42,16 +41,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 });
-
-export const TodosFragment = graphql(`
-  fragment TodosFragment on Query {
-    todos {
-      id
-      title
-      content
-    }
-  }
-`);
 
 type TodoItem = Pick<Todo, 'id' | 'title' | 'content'>;
 

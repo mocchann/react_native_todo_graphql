@@ -77,13 +77,13 @@ const createStyles = (insets: { top: number; bottom: number }) =>
   });
 
 const TodosDocument = graphql(`
-  query Todos {
-    todos {
+  query Todos($userId: ID!) {
+    todos(userId: $userId) {
       id
       title
       content
     }
-    todoCount
+    todoCount(userId: $userId)
   }
 `);
 
@@ -91,8 +91,13 @@ export const TodosScreen = () => {
   const safeAreaInsets = useSafeAreaInsets();
   const styles = createStyles(safeAreaInsets);
   const { state, actions } = useAppContext();
+  if (!state.user?.id) {
+    return null;
+  }
 
-  const { data, loading, error } = useQuery(TodosDocument);
+  const { data, loading, error } = useQuery(TodosDocument, {
+    variables: { userId: state.user?.id },
+  });
 
   const todosData =
     data && typeof data === 'object' && 'todos' in data

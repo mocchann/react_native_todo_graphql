@@ -1,5 +1,4 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { graphql } from '../generated';
 
 const styles = StyleSheet.create({
   header: {
@@ -33,12 +32,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export const HeaderFragment = graphql(`
-  fragment HeaderFragment on Query {
-    todoCount
-  }
-`);
 
 type Props = {
   todoCount: number;
