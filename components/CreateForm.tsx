@@ -6,13 +6,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useMutation } from '@apollo/client/react';
 import { graphql } from '../generated';
-import { OperationResult } from 'urql';
-import {
-  CreateTodoMutation,
-  CreateTodoMutationVariables,
-} from '../generated/graphql';
 import { useAppContext } from '../contexts/AppContext';
+
+const CreateTodoDocument = graphql(`
+  mutation CreateTodo($input: CreateTodoInput!) {
+    createTodo(input: $input) {
+      errors
+      todo {
+        id
+        title
+        content
+      }
+    }
+  }
+`);
 
 const styles = StyleSheet.create({
   createForm: {
@@ -79,44 +88,45 @@ const styles = StyleSheet.create({
   },
 });
 
-export const CreateTodoFragment = graphql(`
-  fragment CreateTodoFragment on CreateTodoPayload {
-    errors
-    todo {
-      id
-      title
-      content
-    }
-  }
-`);
-
-type Props = {
-  createTodo: (
-    variables: CreateTodoMutationVariables,
-  ) => Promise<OperationResult<CreateTodoMutation> & { createData?: any }>;
-};
-
-export const CreateForm = ({ createTodo }: Props) => {
+export const CreateForm = () => {
   const { state, actions } = useAppContext();
+  const [createTodo] = useMutation(CreateTodoDocument, {
+    refetchQueries: ['Todos'],
+  });
 
-  const handleCreateTodo = (title: string, content: string) => {
+  const handleCreateTodo = async (title: string, content: string) => {
     if (!title.trim() || !content.trim()) {
       Alert.alert('Failed!', 'Please input form');
       return;
     }
-    createTodo({
-      input: { title, content, clientMutationId: String(Date.now()) },
-    }).then(result => {
-      if (result.error) {
-        console.error('Oh, no!', result.error);
+
+    try {
+      const result = await createTodo({
+        variables: {
+          input: {
+            title,
+            content,
+            userId: state.user?.id || '',
+            clientMutationId: String(Date.now()),
+          },
+        },
+      });
+
+      if (
+        result.data &&
+        result.data.createTodo &&
+        result.data.createTodo.errors &&
+        result.data.createTodo.errors.length > 0
+      ) {
+        Alert.alert('Error', result.data.createTodo.errors.join(', '));
         return;
       }
-      if (result.createData?.errors && result.createData.errors.length > 0) {
-        Alert.alert('Error', result.createData.errors.join(', '));
-        return;
-      }
-    });
-    actions.cancelTodo();
+
+      actions.cancelTodo();
+    } catch (error) {
+      console.error('Create todo error:', error);
+      Alert.alert('Error', 'Failed to create todo');
+    }
   };
 
   return (
